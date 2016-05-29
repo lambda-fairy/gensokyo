@@ -1,0 +1,11 @@
+[package]
+name = "ponk"
+version = "0.1.0"
+authors = ["Chris Wong <lambda.fairy@gmail.com>"]
+
+[dependencies]
+rlibc = "1.0"
+
+[lib]
+name = "ponk"
+crate-type = ["staticlib"]
