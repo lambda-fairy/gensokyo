@@ -1,5 +1,5 @@
 [package]
-name = "ponk"
+name = "akira"
 version = "0.1.0"
 authors = ["Chris Wong <lambda.fairy@gmail.com>"]
 
@@ -7,5 +7,5 @@ authors = ["Chris Wong <lambda.fairy@gmail.com>"]
 rlibc = "1.0"
 
 [lib]
-name = "ponk"
+name = "akira"
 crate-type = ["staticlib"]
