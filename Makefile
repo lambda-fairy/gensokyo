@@ -1,10 +1,8 @@
 all: ponk.iso
 
 target/release/ponk.0.o: Cargo.toml Cargo.lock src/lib.rs
-	cargo rustc --release -- -C lto -C panic=abort -C no-redzone=yes -C no-stack-check
-	cd target/release && \
-	   ar x libponk.a && \
-	   rm divdc3.o divsc3.o divxc3.o emutls.o eprintf.o gcc_personality_v0.o
+	cargo rustc --release -- -C lto -C panic=abort -C no-redzone -C no-stack-check
+	cd target/release && ar x libponk.a
 
 build/efi/boot/bootx64.efi: target/release/ponk.0.o
 	mkdir -p $(dir $@)
