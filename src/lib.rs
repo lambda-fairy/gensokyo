@@ -48,7 +48,7 @@ pub extern "win64" fn efi_start(_image_handle: *const (), system_table: *const S
         let con_out = (*system_table).con_out;
         ((*con_out).output_string)(con_out, buffer.as_ptr());
     }
-    0
+    loop {}
 }
 
 #[no_mangle] pub fn abort() -> ! { loop {} }
