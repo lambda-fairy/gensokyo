@@ -1,5 +1,5 @@
 # Either 'debug' or 'release'
-PROFILE := debug
+PROFILE := release
 
 EFI_TARGET := x86_64-efi-pe
 
@@ -31,7 +31,7 @@ core/target/$(EFI_TARGET)/libcore.rlib: $(call crate,core/)
 	cd core && $(call efi_cargo_rustc,--features disable_float,)
 
 target/$(EFI_TARGET)/$(PROFILE)/libakira.a: core/target/$(EFI_TARGET)/libcore.rlib $(call crate,)
-	$(call efi_cargo_rustc,,)
+	$(call efi_cargo_rustc,,-C lto)
 
 build/efi/boot/bootx64.efi: target/$(EFI_TARGET)/$(PROFILE)/libakira.a
 # For some reason, ld doesn't accept the archive directly. Instead we have to
