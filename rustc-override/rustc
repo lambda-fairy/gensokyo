@@ -1,0 +1,9 @@
+#!/bin/sh
+
+ROOT="$(dirname "$(readlink -f "$0")")"
+ROOT="$(readlink -f "$ROOT/..")"
+
+if [ -z "$OVERRIDE_TARGET" ]; then echo 'Missing $OVERRIDE_TARGET'; exit 1; fi
+if [ -z "$OVERRIDE_PROFILE" ]; then echo 'Missing $OVERRIDE_PROFILE'; exit 1; fi
+if [ -z "$OVERRIDE_RUSTC" ]; then echo 'Missing $OVERRIDE_RUSTC'; exit 1; fi
+exec "$OVERRIDE_RUSTC" -L "$ROOT/core/target/$OVERRIDE_TARGET/$OVERRIDE_PROFILE" $@
