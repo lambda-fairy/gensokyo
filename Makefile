@@ -1,48 +1,61 @@
-# Either 'debug' or 'release'
-PROFILE := release
+TARGET := x86_64-efi-pe
 
-EFI_TARGET := x86_64-efi-pe
-
-EFI_AR := $(EFI_TARGET)-ar
-EFI_LD := $(EFI_TARGET)-ld
+AR := $(TARGET)-ar
+LD := $(TARGET)-ld
 
 # Runs `cargo rustc` with the specified options
 # $1: Options passed to Cargo
 # $2: Options passed to rustc
-efi_cargo_rustc = \
-	OVERRIDE_TARGET=$(EFI_TARGET) \
-	OVERRIDE_PROFILE=$(PROFILE) \
+cargo_rustc = \
+	OVERRIDE_TARGET=$(TARGET) \
+	OVERRIDE_PROFILE=release \
 	OVERRIDE_RUSTC=$(shell which rustc) \
 	PATH="$(realpath rustc-override):$$PATH" \
-	cargo rustc --target $(realpath $(EFI_TARGET).json) $(PROFILE_FLAG) $1 \
+	cargo rustc --target $(realpath $(TARGET).json) --release $1 \
 		-- -C panic=abort -C no-stack-check $2
-PROFILE_FLAG := $(if $(filter release,$(PROFILE)),--release,)
 
 # Recursive wildcard function
 # http://blog.jgc.org/2011/07/gnu-make-recursive-wildcard-function.html
 rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) \
 	$(filter $(subst *,%,$2),$d))
 
-crate = $1Cargo.toml $1Cargo.lock $(call rwildcard,$1src/,*.rs)
+# Return a list of Cargo and Rust files found in some directory
+# $1: Directory to search within (must include trailing slash)
+find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
+	$(call rwildcard,$1src/,*.rs)
 
 all: akira.iso
 
-core/target/$(EFI_TARGET)/libcore.rlib: $(call crate,core/)
-	cd core && $(call efi_cargo_rustc,--features disable_float,)
+# Abbreviations for intermediate build files
+LIBCORE_RLIB := core/target/$(TARGET)/libcore.rlib
+LIBAKIRA_A := target/$(TARGET)/release/libakira.a
+BOOTX64_EFI := build/efi/boot/bootx64.efi
 
-target/$(EFI_TARGET)/$(PROFILE)/libakira.a: core/target/$(EFI_TARGET)/libcore.rlib $(call crate,)
-	$(call efi_cargo_rustc,,-C lto)
+# Cargo dependencies that are kept in the repository (not on crates.io).
+# `core` is not included because it's special and must be handled separately.
+LOCAL_CARGO_DEPS := uefi-sys
 
-build/efi/boot/bootx64.efi: target/$(EFI_TARGET)/$(PROFILE)/libakira.a
+# Step 1: Build the custom `libcore`
+$(LIBCORE_RLIB): $(call find_rust_files,core/)
+	cd core && $(call cargo_rustc,--features disable_float,)
+
+# Step 2: Compile the EFI stub
+$(LIBAKIRA_A): $(LIBCORE_RLIB) $(foreach crate,. $(LOCAL_CARGO_DEPS), \
+		$(call find_rust_files,$(crate)/))
+	$(call cargo_rustc,,-C lto)
+
+# Step 3: Link the result into an EFI executable
+$(BOOTX64_EFI): $(LIBAKIRA_A)
 # For some reason, ld doesn't accept the archive directly. Instead we have to
 # unpack the archive then link it back up.
-	cd $(dir $<) && $(EFI_AR) x $(notdir $<)
+	cd $(dir $<) && $(AR) x $(notdir $<)
 	mkdir -p $(dir $@)
-	$(EFI_LD) --oformat pei-x86-64 --subsystem 10 -pie -e efi_start target/$(EFI_TARGET)/$(PROFILE)/*.o -o $@
+	$(LD) --oformat pei-x86-64 --subsystem 10 -pie -e efi_start $(dir $<)*.o -o $@
 
-build: build/efi/boot/bootx64.efi
+build: $(BOOTX64_EFI)
 	touch $@
 
+# Step 4: Bundle everything into an ISO image
 akira.iso: build
 	mkisofs -o $@ $<
 

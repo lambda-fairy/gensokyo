@@ -6,6 +6,9 @@ authors = ["Chris Wong <lambda.fairy@gmail.com>"]
 [dependencies]
 rlibc = "1.0"
 
+[dependencies.uefi-sys]
+path = "uefi-sys"
+
 [lib]
 name = "akira"
 crate-type = ["staticlib"]
