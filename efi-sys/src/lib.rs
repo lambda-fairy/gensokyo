@@ -1,6 +1,11 @@
 #![allow(non_camel_case_types, non_snake_case)]
 #![no_std]
 
+//! Low-level UEFI definitions.
+//!
+//! This crate provides the bare minimum to make Akira work, and so is in no way
+//! near complete.
+
 mod protocol;
 pub use protocol::*;
 

@@ -3,16 +3,21 @@ TARGET := x86_64-efi-pe
 AR := $(TARGET)-ar
 LD := $(TARGET)-ld
 
-# Runs `cargo rustc` with the specified options
-# $1: Options passed to Cargo
-# $2: Options passed to rustc
-cargo_rustc = \
+# Runs `cargo` with the specified options
+# $1: Cargo subcommand to run (e.g. `build`)
+# $2: Extra options
+cargo = \
 	OVERRIDE_TARGET=$(TARGET) \
 	OVERRIDE_PROFILE=release \
 	OVERRIDE_RUSTC=$(shell which rustc) \
+	OVERRIDE_RUSTDOC=$(shell which rustdoc) \
 	PATH="$(realpath rustc-override):$$PATH" \
-	cargo rustc --target $(realpath $(TARGET).json) --release $1 \
-		-- -C panic=abort -C no-stack-check $2
+	cargo $1 --target $(realpath $(TARGET).json) --release $2
+
+# Runs `cargo rustc` with the specified options
+# $1: Options passed to Cargo
+# $2: Options passed to rustc
+cargo_rustc = $(call cargo,rustc,$1 -- -C panic=abort -C no-stack-check $2)
 
 # Recursive wildcard function
 # http://blog.jgc.org/2011/07/gnu-make-recursive-wildcard-function.html
@@ -31,17 +36,18 @@ LIBCORE_RLIB := core/target/$(TARGET)/libcore.rlib
 LIBAKIRA_A := target/$(TARGET)/release/libakira.a
 BOOTX64_EFI := build/efi/boot/bootx64.efi
 
-# Cargo dependencies that are kept in the repository (not on crates.io).
-# `core` is not included because it's special and must be handled separately.
-LOCAL_CARGO_DEPS := efi efi-sys
+# When any of these files change, the main crate will be rebuilt
+ALL_AKIRA_DEPS := $(LIBCORE_RLIB) \
+	$(call find_rust_files,efi) \
+	$(call find_rust_files,efi-sys) \
+	$(call find_rust_files,) \
 
 # Step 1: Build the custom `libcore`
 $(LIBCORE_RLIB): $(call find_rust_files,core/)
 	cd core && $(call cargo_rustc,--features disable_float,)
 
 # Step 2: Compile the EFI stub
-$(LIBAKIRA_A): $(LIBCORE_RLIB) $(foreach crate,. $(LOCAL_CARGO_DEPS), \
-		$(call find_rust_files,$(crate)/))
+$(LIBAKIRA_A): $(ALL_AKIRA_DEPS)
 	$(call cargo_rustc,,-C lto)
 
 # Step 3: Link the result into an EFI executable
@@ -59,10 +65,13 @@ build: $(BOOTX64_EFI)
 akira.iso: build
 	mkisofs -o $@ $<
 
+doc: $(ALL_AKIRA_DEPS)
+	$(call cargo,doc,)
+
 clean:
 	cd core && cargo clean
 	cargo clean
 	rm -rf build
 	rm -f akira.iso
 
-.PHONY: all clean
+.PHONY: all doc clean

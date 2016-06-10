@@ -36,3 +36,8 @@ To build the system, simply type `make`. This will build the EFI executable and 
 You can then test the result using any reputable UEFI implementation. If you're using [VirtualBox][virtualbox], be sure to tick the "Enable EFI" option in the settings.
 
 [virtualbox]: https://www.virtualbox.org/
+
+
+## Documentation
+
+The code includes a tiny bit of documentation. To read it, run `make doc` and browse `target/x86_64-efi-pe/doc`.
