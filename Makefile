@@ -29,7 +29,7 @@ rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) \
 find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
 	$(call rwildcard,$1src/,*.rs)
 
-all: akira.iso
+all: akira.gpt akira.iso
 
 # Abbreviations for intermediate build files
 LIBCORE_RLIB := core/target/$(TARGET)/libcore.rlib
@@ -61,17 +61,33 @@ $(BOOTX64_EFI): $(LIBAKIRA_A)
 build: $(BOOTX64_EFI)
 	touch $@
 
-# Step 4: Bundle everything into an ISO image
+# Step 4: Generate GPT and ISO images
+akira.fat: build
+	dd if=/dev/zero of=$@ bs=512 count=91669
+	mformat -i $@ -h 32 -t 32 -n 64 -c 1
+	mcopy -s -i $@ $</* ::/
+
+akira.gpt: akira.fat
+	dd if=/dev/zero of=$@ bs=512 count=93750  # 48 MB
+	parted $@ -s -a minimal mklabel gpt
+	parted $@ -s -a minimal mkpart EFI FAT16 2048s 93716s
+	parted $@ -s -a minimal toggle 1 boot
+	dd if=$< of=$@ bs=512 count=91669 seek=2048 conv=notrunc
+
 akira.iso: build
 	mkisofs -o $@ $<
 
 doc: $(ALL_AKIRA_DEPS)
 	$(call cargo,doc,)
 
+qemu: akira.gpt
+	qemu-system-x86_64 -bios OVMF.fd -hda $<
+
 clean:
 	cd core && cargo clean
 	cargo clean
 	rm -rf build
+	rm -f akira.fat akira.gpt
 	rm -f akira.iso
 
-.PHONY: all doc clean
+.PHONY: all doc qemu clean

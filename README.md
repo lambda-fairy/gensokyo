@@ -7,7 +7,24 @@ Akira is my toy OS. There's not much stuff here right now, but feel free to look
 
 ## Building
 
-You will need GNU Make and a recent nightly version of the Rust compiler.
+You will need:
+
++ GNU Make
++ mkisofs
++ mtools
++ parted
++ A recent nightly version of Rust
+
+
+### Step 0: install Rust
+
+Akira uses experimental Rust features, and so needs the nightly version of the compiler.
+
+If you're using [rustup], you can switch to nightly with the following command:
+
+    rustup default nightly
+
+[rustup]: https://www.rustup.rs/
 
 
 ### Step 1: install an EFI cross toolchain
@@ -31,10 +48,11 @@ Grab all the code using this command:
 
 ### Step 3: build the thing
 
-To build the system, simply type `make`. This will build the EFI executable and generate an ISO image (`akira.iso`).
+To build the system, simply type `make`. This will compile the EFI executable and generate two images: an CD image (`akira.iso`) and a hard disk image (`akira.gpt`).
 
-You can then test the result using any reputable UEFI implementation. If you're using [VirtualBox][virtualbox], be sure to tick the "Enable EFI" option in the settings.
+You can run either image using any reputable UEFI implementation. If [QEMU][qemu] is installed, you can run it with `make qemu`. If you're using [VirtualBox][virtualbox] instead, be sure to tick the "Enable EFI" option in the settings.
 
+[qemu]: http://wiki.qemu.org/Main_Page
 [virtualbox]: https://www.virtualbox.org/
 
 
