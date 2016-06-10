@@ -2,28 +2,36 @@
 #![feature(lang_items)]
 #![feature(asm)]
 
+extern crate efi;
 extern crate rlibc;
-extern crate uefi_sys;
 
-use uefi_sys::*;
+use efi::{sys, Efi};
 
 #[no_mangle]
 pub extern "win64" fn efi_start(
-    _image_handle: *const (),
-    system_table: *const EFI_SYSTEM_TABLE) -> EFI_STATUS
+    image_handle: sys::HANDLE,
+    system_table: *const sys::SYSTEM_TABLE) -> sys::STATUS
 {
-    let hello = "Hello, world!\r\n";
-    let mut buffer = [0u16; 64];
-    for (c, d) in hello.bytes().zip(buffer.iter_mut()) {
-        *d = c as u16;
-    }
-    unsafe {
-        let con_out = (*system_table).ConOut;
-        ((*con_out).OutputString)(con_out, buffer.as_ptr());
-    }
+    let efi = unsafe { Efi::new(image_handle, system_table) };
+    let out = efi.stdout();
+    write!(out, "Hello, world!\r\n").unwrap();
     loop {}
 }
 
 #[no_mangle] pub fn abort() -> ! { loop {} }
 #[lang = "eh_personality"] extern fn eh_personality() {}
-#[lang = "panic_fmt"] extern fn panic_fmt() -> ! { abort() }
+
+#[lang = "panic_fmt"]
+extern fn panic_fmt(args: core::fmt::Arguments, file: &str, line: u32) -> ! {
+    let _ = Efi::with_instance(|efi| {
+        write!(efi.stdout(), "\r
+\r
+===================== PANIC ======================\r
+{args}\r
+    at {file}:{line}\r
+==================================================\r
+\r
+", args = args, file = file, line = line)
+    });
+    abort();
+}

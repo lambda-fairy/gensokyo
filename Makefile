@@ -33,7 +33,7 @@ BOOTX64_EFI := build/efi/boot/bootx64.efi
 
 # Cargo dependencies that are kept in the repository (not on crates.io).
 # `core` is not included because it's special and must be handled separately.
-LOCAL_CARGO_DEPS := uefi-sys
+LOCAL_CARGO_DEPS := efi efi-sys
 
 # Step 1: Build the custom `libcore`
 $(LIBCORE_RLIB): $(call find_rust_files,core/)

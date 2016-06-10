@@ -1,0 +1,8 @@
+[package]
+name = "efi"
+version = "0.1.0"
+authors = ["Chris Wong <lambda.fairy@gmail.com>"]
+
+[dependencies.efi-sys]
+version = "0.1"
+path = "../efi-sys"
