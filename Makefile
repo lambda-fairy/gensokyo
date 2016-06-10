@@ -40,7 +40,7 @@ BOOTX64_EFI := build/efi/boot/bootx64.efi
 ALL_AKIRA_DEPS := $(LIBCORE_RLIB) \
 	$(call find_rust_files,efi) \
 	$(call find_rust_files,efi-sys) \
-	$(call find_rust_files,) \
+	$(call find_rust_files,)
 
 # Step 1: Build the custom `libcore`
 $(LIBCORE_RLIB): $(call find_rust_files,core/)
