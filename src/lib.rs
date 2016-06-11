@@ -18,7 +18,13 @@ pub extern "win64" fn efi_start(
     loop {}
 }
 
-#[no_mangle] pub fn abort() -> ! { loop {} }
+#[no_mangle]
+pub fn abort() -> ! {
+    loop {
+        unsafe { asm!("hlt" :::: "volatile"); }
+    }
+}
+
 #[lang = "eh_personality"] extern fn eh_personality() {}
 
 #[lang = "panic_fmt"]
