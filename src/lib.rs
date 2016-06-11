@@ -25,8 +25,6 @@ pub fn abort() -> ! {
     }
 }
 
-#[lang = "eh_personality"] extern fn eh_personality() {}
-
 #[lang = "panic_fmt"]
 extern fn panic_fmt(args: core::fmt::Arguments, file: &str, line: u32) -> ! {
     let _ = Efi::with_instance(|efi| {
