@@ -16,8 +16,7 @@ cargo = \
 
 # Runs `cargo rustc` with the specified options
 # $1: Options passed to Cargo
-# $2: Options passed to rustc
-cargo_rustc = $(call cargo,rustc,$1 -- -C panic=abort -C no-stack-check $2)
+cargo_rustc = $(call cargo,rustc,$1 -- -C panic=abort -C no-stack-check)
 
 # Recursive wildcard function
 # http://blog.jgc.org/2011/07/gnu-make-recursive-wildcard-function.html
@@ -44,11 +43,11 @@ ALL_AKIRA_DEPS := $(LIBCORE_RLIB) \
 
 # Step 1: Build the custom `libcore`
 $(LIBCORE_RLIB): $(call find_rust_files,core/)
-	cd core && $(call cargo_rustc,--features disable_float,)
+	cd core && $(call cargo_rustc,--features disable_float)
 
 # Step 2: Compile the EFI stub
 $(LIBAKIRA_A): $(ALL_AKIRA_DEPS)
-	$(call cargo_rustc,,-C lto)
+	$(call cargo_rustc,)
 
 # Step 3: Link the result into an EFI executable
 $(BOOTX64_EFI): $(LIBAKIRA_A)
