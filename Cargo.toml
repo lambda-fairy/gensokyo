@@ -13,6 +13,9 @@ path = "efi"
 name = "akira"
 crate-type = ["staticlib"]
 
+[profile.dev]
+panic = "abort"
+
 [profile.release]
 panic = "abort"
 lto = true

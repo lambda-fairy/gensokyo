@@ -1,3 +1,6 @@
+# Either 'debug' or 'release'
+PROFILE := release
+
 TARGET := x86_64-efi-pe
 
 AR := $(TARGET)-ar
@@ -8,11 +11,12 @@ LD := $(TARGET)-ld
 # $2: Extra options
 cargo = \
 	OVERRIDE_TARGET=$(TARGET) \
-	OVERRIDE_PROFILE=release \
+	OVERRIDE_PROFILE=$(PROFILE) \
 	OVERRIDE_RUSTC=$(shell which rustc) \
 	OVERRIDE_RUSTDOC=$(shell which rustdoc) \
 	PATH="$(realpath rustc-override):$$PATH" \
-	cargo $1 --target $(realpath $(TARGET).json) --release $2
+	cargo $1 --target $(realpath $(TARGET).json) $(PROFILE_FLAG) $2
+PROFILE_FLAG := $(if $(filter release,$(PROFILE)),--release,)
 
 # Runs `cargo rustc` with the specified options
 # $1: Options passed to Cargo
@@ -32,7 +36,7 @@ all: akira.gpt akira.iso
 
 # Abbreviations for intermediate build files
 LIBCORE_RLIB := core/target/$(TARGET)/libcore.rlib
-LIBAKIRA_A := target/$(TARGET)/release/libakira.a
+LIBAKIRA_A := target/$(TARGET)/$(PROFILE)/libakira.a
 BOOTX64_EFI := build/efi/boot/bootx64.efi
 
 # When any of these files change, the main crate will be rebuilt
