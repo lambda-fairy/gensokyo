@@ -15,7 +15,7 @@ pub extern "win64" fn efi_start(
     let efi = unsafe { Efi::new(image_handle, system_table) };
     let out = efi.stdout();
     write!(out, "Hello, world!\r\n").unwrap();
-    loop {}
+    abort();
 }
 
 #[no_mangle]
