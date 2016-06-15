@@ -20,7 +20,7 @@ PROFILE_FLAG := $(if $(filter release,$(PROFILE)),--release,)
 
 # Runs `cargo rustc` with the specified options
 # $1: Options passed to Cargo
-cargo_rustc = $(call cargo,rustc,$1 -- -C panic=abort -C no-stack-check)
+cargo_rustc = $(call cargo,rustc,$1 -- -C panic=abort)
 
 # Recursive wildcard function
 # http://blog.jgc.org/2011/07/gnu-make-recursive-wildcard-function.html
