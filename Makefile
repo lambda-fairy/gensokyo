@@ -1,26 +1,7 @@
-# Either 'debug' or 'release'
-PROFILE := release
+efi_target := x86_64-efi-pe
 
-TARGET := x86_64-efi-pe
-
-AR := $(TARGET)-ar
-LD := $(TARGET)-ld
-
-# Runs `cargo` with the specified options
-# $1: Cargo subcommand to run (e.g. `build`)
-# $2: Extra options
-cargo = \
-	OVERRIDE_TARGET=$(TARGET) \
-	OVERRIDE_PROFILE=$(PROFILE) \
-	OVERRIDE_RUSTC=$(shell which rustc) \
-	OVERRIDE_RUSTDOC=$(shell which rustdoc) \
-	PATH="$(realpath rustc-override):$$PATH" \
-	cargo $1 --target $(realpath $(TARGET).json) $(PROFILE_FLAG) $2
-PROFILE_FLAG := $(if $(filter release,$(PROFILE)),--release,)
-
-# Runs `cargo rustc` with the specified options
-# $1: Options passed to Cargo
-cargo_rustc = $(call cargo,rustc,$1 -- -C panic=abort)
+efi_ar := $(efi_target)-ar
+efi_ld := $(efi_target)-ld
 
 # Recursive wildcard function
 # http://blog.jgc.org/2011/07/gnu-make-recursive-wildcard-function.html
@@ -35,33 +16,34 @@ find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
 all: akira.gpt akira.iso
 
 # Abbreviations for intermediate build files
-LIBCORE_RLIB := core/target/$(TARGET)/libcore.rlib
-LIBAKIRA_A := target/$(TARGET)/$(PROFILE)/libakira.a
-BOOTX64_EFI := build/efi/boot/bootx64.efi
+efi_target_json := $(realpath $(efi_target).json)
+libcore_rlib := core/target/$(efi_target)/release/libcore.rlib
+libakira_a := target/$(efi_target)/release/libakira.a
+bootx64_efi := build/efi/boot/bootx64.efi
 
 # When any of these files change, the main crate will be rebuilt
-ALL_AKIRA_DEPS := $(LIBCORE_RLIB) \
+all_akira_deps := $(libcore_rlib) \
 	$(call find_rust_files,efi) \
 	$(call find_rust_files,efi-sys) \
 	$(call find_rust_files,)
 
 # Step 1: Build the custom `libcore`
-$(LIBCORE_RLIB): $(call find_rust_files,core/)
-	cd core && $(call cargo_rustc,--features disable_float)
+$(libcore_rlib): $(call find_rust_files,core/)
+	cargo build --release --manifest-path=core/Cargo.toml --features disable_float --target=$(efi_target)
 
 # Step 2: Compile the EFI stub
-$(LIBAKIRA_A): $(ALL_AKIRA_DEPS)
-	$(call cargo_rustc,)
+$(libakira_a): $(all_akira_deps)
+	RUSTFLAGS='-L $(dir $(libcore_rlib))' cargo build --release --target=$(efi_target)
 
 # Step 3: Link the result into an EFI executable
-$(BOOTX64_EFI): $(LIBAKIRA_A)
+$(bootx64_efi): $(libakira_a)
 # For some reason, ld doesn't accept the archive directly. Instead we have to
 # unpack the archive then link it back up.
-	cd $(dir $<) && $(AR) x $(notdir $<)
+	cd $(dir $<) && $(efi_ar) x $(notdir $<)
 	mkdir -p $(dir $@)
-	$(LD) --oformat pei-x86-64 --subsystem 10 -pie -e efi_start $(dir $<)*.o -o $@
+	$(efi_ld) --oformat pei-x86-64 --subsystem 10 -pie -e efi_start $(dir $<)*.o -o $@
 
-build: $(BOOTX64_EFI)
+build: $(bootx64_efi)
 	touch $@
 
 # Step 4: Generate GPT and ISO images
@@ -80,7 +62,7 @@ akira.gpt: akira.fat
 akira.iso: build
 	mkisofs -o $@ $<
 
-doc: $(ALL_AKIRA_DEPS)
+doc: $(all_akira_deps)
 	$(call cargo,doc,)
 
 qemu: akira.gpt
