@@ -16,7 +16,6 @@ find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
 all: akira.gpt akira.iso
 
 # Abbreviations for intermediate build files
-efi_target_json := $(realpath $(efi_target).json)
 libcore_rlib := core/target/$(efi_target)/release/libcore.rlib
 libakira_a := target/$(efi_target)/release/libakira.a
 bootx64_efi := build/efi/boot/bootx64.efi
