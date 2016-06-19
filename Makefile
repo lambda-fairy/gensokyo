@@ -16,7 +16,8 @@ find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
 all: akira.gpt akira.iso
 
 # Abbreviations for intermediate build files
-libcore_rlib := core/target/$(efi_target)/release/libcore.rlib
+libcore_dir := core/target/$(efi_target)/release/
+libcore_rlib := $(libcore_dir)libcore.rlib
 libakira_a := target/$(efi_target)/release/libakira.a
 bootx64_efi := build/efi/boot/bootx64.efi
 
@@ -32,7 +33,7 @@ $(libcore_rlib): $(call find_rust_files,core/)
 
 # Step 2: Compile the EFI stub
 $(libakira_a): $(all_akira_deps)
-	RUSTFLAGS='-L $(dir $(libcore_rlib))' cargo build --release --target=$(efi_target)
+	RUSTFLAGS='-L $(libcore_dir)' cargo build --release --target=$(efi_target)
 
 # Step 3: Link the result into an EFI executable
 $(bootx64_efi): $(libakira_a)
@@ -62,7 +63,14 @@ akira.iso: build
 	mkisofs -o $@ $<
 
 doc: $(all_akira_deps)
-	$(call cargo,doc,)
+# There is no analogous 'RUSTDOCFLAGS' variable that lets us pass the library
+# path to rustdoc. As a workaround, we create a wrapper script that calls
+# rustdoc with the appropriate options, and tell Cargo to use that.
+# https://github.com/rust-lang/cargo/issues/2594
+	mkdir -p target
+	printf '#!/bin/sh\nexec rustdoc -L $(libcore_dir) $$@' > target/rustdoc
+	chmod +x target/rustdoc
+	RUSTDOC=target/rustdoc RUSTFLAGS='-L $(libcore_dir)' cargo doc --release --target=$(efi_target)
 
 qemu: akira.gpt
 	qemu-system-x86_64 -bios OVMF.fd -hda $<
