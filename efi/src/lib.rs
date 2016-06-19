@@ -24,7 +24,7 @@ pub type EfiResult<T> = Result<T, Error>;
 /// This returns `Ok` if the high (error) bit is not set, and `Err` otherwise.
 pub fn check_status(status: sys::STATUS) -> EfiResult<()> {
     // TODO: handle warnings
-    if status | sys::MAX_BIT == 0 {
+    if status & sys::MAX_BIT == 0 {
         Ok(())
     } else {
         Err(status)
