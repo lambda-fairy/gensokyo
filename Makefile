@@ -22,8 +22,8 @@ bootx64_efi := build/efi/boot/bootx64.efi
 
 # When any of these files change, the main crate will be rebuilt
 all_akira_deps := $(libcore_rlib) \
-	$(call find_rust_files,efi) \
-	$(call find_rust_files,efi-sys) \
+	$(call find_rust_files,efi/) \
+	$(call find_rust_files,efi-sys/) \
 	$(call find_rust_files,)
 
 # Step 1: Build the custom `libcore`
