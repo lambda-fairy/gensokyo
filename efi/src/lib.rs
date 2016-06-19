@@ -21,9 +21,10 @@ pub type EfiResult<T> = Result<T, Error>;
 
 /// Converts a low-level `EFI_STATUS` to a high-level `EfiResult`.
 ///
-/// This returns `Ok` if the status is `EFI_SUCCESS`, and `Err` otherwise.
+/// This returns `Ok` if the high (error) bit is not set, and `Err` otherwise.
 pub fn check_status(status: sys::STATUS) -> EfiResult<()> {
-    if status == sys::SUCCESS {
+    // TODO: handle warnings
+    if status | sys::MAX_BIT == 0 {
         Ok(())
     } else {
         Err(status)
