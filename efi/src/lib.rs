@@ -1,5 +1,6 @@
 #![feature(coerce_unsized)]
 #![feature(question_mark)]
+#![feature(unique)]
 #![feature(unsize)]
 #![no_std]
 
@@ -12,7 +13,7 @@ use core::iter;
 use core::marker::{PhantomData, Unsize};
 use core::mem;
 use core::ops::{CoerceUnsized, Deref, DerefMut};
-use core::ptr;
+use core::ptr::{self, Unique};
 
 
 static mut INSTANCE: Option<(sys::HANDLE, *const sys::SYSTEM_TABLE)> = None;
@@ -151,16 +152,16 @@ impl Drop for Efi {
 
 pub struct EfiBox<'e, T: ?Sized> {
     _marker: PhantomData<&'e Efi>,
-    ptr: *mut T,
+    ptr: Unique<T>,
 }
 
 impl<'e, T: ?Sized> EfiBox<'e, T> {
     pub unsafe fn from_raw(ptr: *mut T) -> Self {
-        EfiBox { _marker: PhantomData, ptr: ptr }
+        EfiBox { _marker: PhantomData, ptr: Unique::new(ptr) }
     }
 
     pub fn into_raw(self) -> *mut T {
-        self.ptr
+        *self.ptr
     }
 }
 
@@ -169,19 +170,19 @@ impl<'e, T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<EfiBox<'e, U>> for EfiB
 impl<'e, T: ?Sized> Deref for EfiBox<'e, T> {
     type Target = T;
     fn deref(&self) -> &T {
-        unsafe { mem::transmute::<*mut T, &T>(self.ptr) }
+        unsafe { self.ptr.get() }
     }
 }
 
 impl<'e, T: ?Sized> DerefMut for EfiBox<'e, T> {
     fn deref_mut(&mut self) -> &mut T {
-        unsafe { mem::transmute::<*mut T, &mut T>(self.ptr) }
+        unsafe { self.ptr.get_mut() }
     }
 }
 
 impl<'e, T: ?Sized> Drop for EfiBox<'e, T> {
     fn drop(&mut self) {
-        Efi::with_instance(|efi| unsafe { efi.deallocate(self.ptr as *mut _) });
+        Efi::with_instance(|efi| unsafe { efi.deallocate(*self.ptr as *mut _) });
     }
 }
 
