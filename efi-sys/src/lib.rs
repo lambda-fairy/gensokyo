@@ -92,10 +92,10 @@ pub struct BOOT_SERVICES {
     pub AllocatePages: ALLOCATE_PAGES,
     pub FreePages: FREE_PAGES,
     pub GetMemoryMap: GET_MEMORY_MAP,
-    /*
     pub AllocatePool: ALLOCATE_POOL,
     pub FreePool: FREE_POOL,
 
+    /*
     pub CreateEvent: CREATE_EVENT,
     pub SetTimer: SET_TIMER,
     pub WaitForEvent: WAIT_FOR_EVENT,
@@ -163,22 +163,22 @@ pub enum ALLOCATE_TYPE {
 }
 #[repr(C, u32)]
 pub enum MEMORY_TYPE {
-    EfiReservedMemoryType,
-    EfiLoaderCode,
-    EfiLoaderData,
-    EfiBootServicesCode,
-    EfiBootServicesData,
-    EfiRuntimeServicesCode,
-    EfiRuntimeServicesData,
-    EfiConventionalMemory,
-    EfiUnusableMemory,
-    EfiACPIReclaimMemory,
-    EfiACPIMemoryNVS,
-    EfiMemoryMappedIO,
-    EfiMemoryMappedIOPortSpace,
-    EfiPalCode,
-    EfiPersistentMemory,
-    EfiMaxMemoryType,
+    ReservedMemoryType,
+    LoaderCode,
+    LoaderData,
+    BootServicesCode,
+    BootServicesData,
+    RuntimeServicesCode,
+    RuntimeServicesData,
+    ConventionalMemory,
+    UnusableMemory,
+    ACPIReclaimMemory,
+    ACPIMemoryNVS,
+    MemoryMappedIO,
+    MemoryMappedIOPortSpace,
+    PalCode,
+    PersistentMemory,
+    MaxMemoryType,
 }
 pub type PHYSICAL_ADDRESS = u64;
 pub type FREE_PAGES = extern "win64" fn(
@@ -202,6 +202,13 @@ pub struct MEMORY_DESCRIPTOR {
 }
 pub type VIRTUAL_ADDRESS = u64;
 pub const MEMORY_DESCRIPTOR_VERSION: u32 = 1;
+
+pub type ALLOCATE_POOL = extern "win64" fn(
+    MEMORY_TYPE,
+    usize,
+    *mut *mut VOID,
+    ) -> STATUS;
+pub type FREE_POOL = extern "win64" fn(*mut VOID) -> STATUS;
 
 //
 // 4.5 EFI Runtime Services Table, p102

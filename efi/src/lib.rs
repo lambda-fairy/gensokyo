@@ -1,4 +1,6 @@
+#![feature(coerce_unsized)]
 #![feature(question_mark)]
+#![feature(unsize)]
 #![no_std]
 
 //! This crate provides a high-level interface to UEFI.
@@ -7,8 +9,10 @@ pub extern crate efi_sys as sys;
 
 use core::fmt;
 use core::iter;
-use core::marker::PhantomData;
+use core::marker::{PhantomData, Unsize};
 use core::mem;
+use core::ops::{CoerceUnsized, Deref, DerefMut};
+use core::ptr;
 
 
 static mut INSTANCE: Option<(sys::HANDLE, *const sys::SYSTEM_TABLE)> = None;
@@ -69,6 +73,39 @@ impl Efi {
         unsafe { SimpleTextOutput::new((*self.system_table).StdErr) }
     }
 
+    /// Places an object on the UEFI heap.
+    ///
+    /// Returns `Err` when the allocation fails.
+    pub fn boxed<T>(&self, value: T) -> EfiResult<EfiBox<T>> {
+        unsafe {
+            let ptr = self.allocate(mem::size_of::<T>())? as *mut T;
+            ptr::write(ptr, value);
+            Ok(EfiBox::from_raw(ptr))
+        }
+    }
+
+    /// Allocates a block of memory using the UEFI allocator. The memory is of
+    /// type `EfiLoaderData`.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the memory is freed (using `deallocate()`)
+    /// before exiting boot services.
+    pub unsafe fn allocate(&self, size: usize) -> EfiResult<*mut u8> {
+        let mut buffer = ptr::null_mut() as *mut u8;
+        let result = ((*(*self.system_table).BootServices).AllocatePool)(
+                sys::MEMORY_TYPE::LoaderData,
+                size,
+                &mut buffer as *mut _ as *mut _);
+        check_status(result).map(|_| buffer)
+    }
+
+    /// Deallocates a block of memory provided by `allocate()`.
+    pub unsafe fn deallocate(&self, buffer: *mut u8) {
+        // Ignore the result, since nobody checks the result of free() anyway
+        let _ = ((*(*self.system_table).BootServices).FreePool)(buffer as *mut _);
+    }
+
     /// Invokes the given callback with a reference to a current live `Efi`
     /// object. Returns the result of the callback.
     ///
@@ -108,6 +145,55 @@ impl Efi {
 impl Drop for Efi {
     fn drop(&mut self) {
         unsafe { INSTANCE = None; }
+    }
+}
+
+
+pub struct EfiBox<'e, T: ?Sized> {
+    _marker: PhantomData<&'e Efi>,
+    ptr: *mut T,
+}
+
+impl<'e, T: ?Sized> EfiBox<'e, T> {
+    pub unsafe fn from_raw(ptr: *mut T) -> Self {
+        EfiBox { _marker: PhantomData, ptr: ptr }
+    }
+
+    pub fn into_raw(self) -> *mut T {
+        self.ptr
+    }
+}
+
+impl<'e, T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<EfiBox<'e, U>> for EfiBox<'e, T> {}
+
+impl<'e, T: ?Sized> Deref for EfiBox<'e, T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        unsafe { mem::transmute::<*mut T, &T>(self.ptr) }
+    }
+}
+
+impl<'e, T: ?Sized> DerefMut for EfiBox<'e, T> {
+    fn deref_mut(&mut self) -> &mut T {
+        unsafe { mem::transmute::<*mut T, &mut T>(self.ptr) }
+    }
+}
+
+impl<'e, T: ?Sized> Drop for EfiBox<'e, T> {
+    fn drop(&mut self) {
+        Efi::with_instance(|efi| unsafe { efi.deallocate(self.ptr as *mut _) });
+    }
+}
+
+impl<'e, T: fmt::Debug + ?Sized> fmt::Debug for EfiBox<'e, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
+    }
+}
+
+impl<'e, T: fmt::Display + ?Sized> fmt::Display for EfiBox<'e, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(&**self, f)
     }
 }
 
