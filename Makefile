@@ -13,13 +13,14 @@ rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) \
 find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
 	$(call rwildcard,$1src/,*.rs)
 
-all: akira.gpt akira.iso
+all: target/akira.gpt target/akira.iso
 
 # Abbreviations for intermediate build files
 libcore_dir := core/target/$(efi_target)/release/
 libcore_rlib := $(libcore_dir)libcore.rlib
 libakira_a := target/$(efi_target)/release/libakira.a
-bootx64_efi := build/efi/boot/bootx64.efi
+bootx64_efi := target/filesystem/efi/boot/bootx64.efi
+doc_dir := target/$(efi_target)/doc
 
 # When any of these files change, the main crate will be rebuilt
 all_akira_deps := $(libcore_rlib) \
@@ -43,26 +44,26 @@ $(bootx64_efi): $(libakira_a)
 	mkdir -p $(dir $@)
 	$(efi_ld) --oformat pei-x86-64 --subsystem 10 -pie -e efi_start $(dir $<)*.o -o $@
 
-build: $(bootx64_efi)
+target/filesystem: $(bootx64_efi)
 	touch $@
 
 # Step 4: Generate GPT and ISO images
-akira.fat: build
+target/akira.fat: target/filesystem
 	dd if=/dev/zero of=$@ bs=512 count=91669
 	mformat -i $@ -h 32 -t 32 -n 64 -c 1
 	mcopy -s -i $@ $</* ::/
 
-akira.gpt: akira.fat
+target/akira.gpt: target/akira.fat
 	dd if=/dev/zero of=$@ bs=512 count=93750  # 48 MB
 	parted $@ -s -a minimal mklabel gpt
 	parted $@ -s -a minimal mkpart EFI FAT16 2048s 93716s
 	parted $@ -s -a minimal toggle 1 boot
 	dd if=$< of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
-akira.iso: build
+target/akira.iso: target/filesystem
 	mkisofs -o $@ $<
 
-doc: $(all_akira_deps)
+$(doc_dir): $(all_akira_deps)
 # There is no analogous 'RUSTDOCFLAGS' variable that lets us pass the library
 # path to rustdoc. As a workaround, we create a wrapper script that calls
 # rustdoc with the appropriate options, and tell Cargo to use that.
@@ -71,15 +72,23 @@ doc: $(all_akira_deps)
 	printf '#!/bin/sh\nexec rustdoc -L $(libcore_dir) $$@' > target/rustdoc
 	chmod +x target/rustdoc
 	RUSTDOC=target/rustdoc RUSTFLAGS='-L $(libcore_dir)' cargo doc --release --target=$(efi_target)
+	touch $@
 
-qemu: akira.gpt
+doc: $(doc_dir)
+
+doc-upload: $(doc_dir)
+	cd $(doc_dir) && \
+		git init && \
+		git remote add origin git@github.com:lfairy/akira.git && \
+		git add . && \
+		git commit -m 'Update documentation' && \
+		git push --force origin master:gh-pages
+
+qemu: target/akira.gpt
 	qemu-system-x86_64 -bios OVMF.fd -hda $<
 
 clean:
 	cd core && cargo clean
 	cargo clean
-	rm -rf build
-	rm -f akira.fat akira.gpt
-	rm -f akira.iso
 
 .PHONY: all doc qemu clean
