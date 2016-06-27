@@ -2,6 +2,7 @@
 
 use Status;
 
+#[allow(missing_debug_implementations)]
 #[repr(C)]
 pub struct SimpleTextOutputProtocol {
     pub reset: TextReset,

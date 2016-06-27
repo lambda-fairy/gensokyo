@@ -1,4 +1,5 @@
 #![no_std]
+#![warn(missing_debug_implementations)]
 
 //! Low-level UEFI definitions.
 //!
@@ -15,7 +16,10 @@ pub use protocol::*;
 // 2.3.1 Data Types, p23
 //
 
-#[repr(C)] pub enum Void { #[doc(hidden)] _Impossible }
+#[derive(Debug)]
+#[repr(C)]
+pub enum Void { #[doc(hidden)] _Impossible }
+
 pub type Status = usize;
 pub type Handle = *const Void;
 
@@ -23,6 +27,7 @@ pub type Handle = *const Void;
 // Appendix A: GUID and Time Formats, p2335
 //
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct Guid {
     // FIXME: use repr(align = "64") instead
@@ -47,6 +52,7 @@ pub const MAX_BIT: usize = !(!0usize >> 1);
 // 4.2 EFI Table Header, p94
 //
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct TableHeader {
     pub signature: u64,
@@ -60,6 +66,7 @@ pub struct TableHeader {
 // 4.3 EFI System Table, p96
 //
 
+#[allow(missing_debug_implementations)]
 #[repr(C)]
 pub struct SystemTable {
     pub hdr: TableHeader,
@@ -81,6 +88,7 @@ pub struct SystemTable {
 // 4.4 Boot Services Table, p98
 //
 
+#[allow(missing_debug_implementations)]
 #[repr(C)]
 pub struct BootServices {
     pub hdr: TableHeader,
@@ -178,6 +186,7 @@ pub type AllocatePages = extern "win64" fn(
     usize,
     *mut PhysicalAddress,
     ) -> Status;
+#[derive(Debug)]
 #[repr(C, u32)]
 pub enum AllocateType {
     AllocateAnyPages,
@@ -245,6 +254,7 @@ pub type ExitBootServices = extern "win64" fn(
 // 4.5 EFI Runtime Services Table, p102
 //
 
+#[allow(missing_debug_implementations)]
 #[repr(C)]
 pub struct RuntimeServices {
     pub hdr: TableHeader,
@@ -276,6 +286,7 @@ pub struct RuntimeServices {
 // 4.6 EFI Configuration Table & Properties Table, p104
 //
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct ConfigurationTable {
     pub vendor_guid: Guid,
