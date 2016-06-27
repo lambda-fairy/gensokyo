@@ -76,29 +76,32 @@ impl Efi {
 
     /// Places an object on the UEFI heap.
     ///
-    /// Returns `Err` when the allocation fails.
-    pub fn boxed<T>(&self, value: T) -> EfiResult<EfiBox<T>> {
+    /// Panics if the allocation fails.
+    pub fn boxed<T>(&self, value: T) -> EfiBox<T> {
         unsafe {
-            let ptr = self.allocate(mem::size_of::<T>())? as *mut T;
+            let ptr = self.allocate(mem::size_of::<T>()) as *mut T;
             ptr::write(ptr, value);
-            Ok(EfiBox::from_raw(ptr))
+            EfiBox::from_raw(ptr)
         }
     }
 
     /// Allocates a block of memory using the UEFI allocator. The memory is of
     /// type `EfiLoaderData`.
     ///
+    /// Panics if the allocation fails.
+    ///
     /// # Safety
     ///
     /// The caller must ensure that the memory is freed (using `deallocate()`)
     /// before exiting boot services.
-    pub unsafe fn allocate(&self, size: usize) -> EfiResult<*mut u8> {
+    pub unsafe fn allocate(&self, size: usize) -> *mut u8 {
         let mut buffer = ptr::null_mut() as *mut u8;
         let result = ((*(*self.system_table).boot_services).allocate_pool)(
                 sys::MemoryType::LoaderData,
                 size,
                 &mut buffer as *mut _ as *mut _);
-        check_status(result).map(|_| buffer)
+        check_status(result).unwrap();
+        buffer
     }
 
     /// Deallocates a block of memory provided by `allocate()`.
