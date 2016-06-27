@@ -110,6 +110,41 @@ impl Efi {
         let _ = ((*(*self.system_table).boot_services).free_pool)(buffer as *mut _);
     }
 
+    /// Retrieves a copy of the UEFI memory map.
+    pub fn memory_map(&self) -> MemoryMap {
+        unsafe {
+            let mut memory_map_size: usize = 0;
+            let mut map_key: usize = 0;
+            let mut descriptor_size: usize = 0;
+            let mut descriptor_version: u32 = 0;
+            // First, make a call with a null buffer to get its size
+            let _ = ((*(*self.system_table).boot_services).get_memory_map)(
+                &mut memory_map_size as *mut _,
+                ptr::null_mut() as *mut _,
+                &mut map_key as *mut _,
+                &mut descriptor_size as *mut _,
+                &mut descriptor_version as *mut _);
+            // Add some wiggle room to account for the extra allocation
+            // The '4' is completely arbitrary, but it tends to work in practice
+            memory_map_size += 4 * descriptor_size;
+            // Now call it again with an actual buffer
+            let memory_map = self.allocate(memory_map_size) as *mut _;
+            let result = ((*(*self.system_table).boot_services).get_memory_map)(
+                &mut memory_map_size as *mut _,
+                memory_map,
+                &mut map_key as *mut _,
+                &mut descriptor_size as *mut _,
+                &mut descriptor_version as *mut _);
+            match check_status(result) {
+                Ok(..) => MemoryMap::from_raw(memory_map, memory_map_size, descriptor_size),
+                Err(e) => {
+                    self.deallocate(memory_map as *mut _);
+                    panic!("Could not get memory map (error {:?})", e);
+                },
+            }
+        }
+    }
+
     /// Invokes the given callback with a reference to a current live `Efi`
     /// object. Returns the result of the callback.
     ///
@@ -267,5 +302,81 @@ impl<'e> SimpleTextOutput<'e> {
         let mut writer = Writer { inner: self, result: Ok(()) };
         let _ = fmt::Write::write_fmt(&mut writer, args);
         writer.result
+    }
+}
+
+
+#[derive(Debug)]
+pub struct MemoryMap<'e> {
+    _marker: PhantomData<&'e Efi>,
+    ptr: *mut sys::MemoryDescriptor,
+    memory_map_size: usize,
+    descriptor_size: usize,
+}
+
+impl<'e> MemoryMap<'e> {
+    pub unsafe fn from_raw(
+        ptr: *mut sys::MemoryDescriptor,
+        memory_map_size: usize,
+        descriptor_size: usize) -> Self
+    {
+        assert!(!ptr.is_null());
+        assert!(descriptor_size > 0);
+        assert!(memory_map_size % descriptor_size == 0);
+        MemoryMap {
+            _marker: PhantomData,
+            ptr: ptr,
+            memory_map_size: memory_map_size,
+            descriptor_size: descriptor_size,
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.memory_map_size / self.descriptor_size
+    }
+}
+
+impl<'e> Drop for MemoryMap<'e> {
+    fn drop(&mut self) {
+        Efi::with_instance(|efi| unsafe { efi.deallocate(self.ptr as *mut _) });
+    }
+}
+
+impl<'a, 'e: 'a> IntoIterator for &'a MemoryMap<'e> {
+    type Item = &'a MemoryDescriptor;
+    type IntoIter = MemoryMapIter<'a, 'e>;
+    fn into_iter(self) -> Self::IntoIter {
+        MemoryMapIter {
+            _marker: PhantomData,
+            ptr: self.ptr,
+            memory_map_size: self.memory_map_size,
+            descriptor_size: self.descriptor_size,
+        }
+    }
+}
+
+pub type MemoryDescriptor = sys::MemoryDescriptor;
+
+#[derive(Debug)]
+pub struct MemoryMapIter<'a, 'e: 'a> {
+    _marker: PhantomData<&'a MemoryMap<'e>>,
+    ptr: *mut sys::MemoryDescriptor,
+    memory_map_size: usize,
+    descriptor_size: usize,
+}
+
+impl<'a, 'e> Iterator for MemoryMapIter<'a, 'e> {
+    type Item = &'a MemoryDescriptor;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.memory_map_size == 0 {
+            None
+        } else {
+            unsafe {
+                let result = mem::transmute(self.ptr);
+                self.ptr = (self.ptr as *mut u8).offset(self.descriptor_size as isize) as *mut _;
+                self.memory_map_size -= self.descriptor_size;
+                Some(result)
+            }
+        }
     }
 }

@@ -13,8 +13,9 @@ pub extern "win64" fn efi_start(
     system_table: *const sys::SystemTable) -> sys::Status
 {
     let efi = unsafe { Efi::new(image_handle, system_table) };
-    let out = efi.stdout();
-    write!(out, "Hello, world!\r\n").unwrap();
+    for desc in &efi.memory_map() {
+        write!(efi.stdout(), "{:?}\r\n", desc).unwrap();
+    }
     abort();
 }
 
