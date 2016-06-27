@@ -9,8 +9,8 @@ use efi::{sys, Efi};
 
 #[no_mangle]
 pub extern "win64" fn efi_start(
-    image_handle: sys::HANDLE,
-    system_table: *const sys::SYSTEM_TABLE) -> sys::STATUS
+    image_handle: sys::Handle,
+    system_table: *const sys::SystemTable) -> sys::Status
 {
     let efi = unsafe { Efi::new(image_handle, system_table) };
     let out = efi.stdout();

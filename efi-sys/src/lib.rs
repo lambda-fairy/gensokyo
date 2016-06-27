@@ -1,4 +1,3 @@
-#![allow(non_camel_case_types, non_snake_case)]
 #![no_std]
 
 //! Low-level UEFI definitions.
@@ -16,32 +15,32 @@ pub use protocol::*;
 // 2.3.1 Data Types, p23
 //
 
-pub type VOID = ();
-pub type STATUS = usize;
-pub type HANDLE = *const VOID;
+#[repr(C)] pub enum Void { #[doc(hidden)] _Impossible }
+pub type Status = usize;
+pub type Handle = *const Void;
 
 //
 // Appendix A: GUID and Time Formats, p2335
 //
 
 #[repr(C)]
-pub struct GUID {
+pub struct Guid {
     // FIXME: use repr(align = "64") instead
     // https://github.com/rust-lang/rust/issues/33626
-    pub _Align: [u64; 0],
-    pub TimeLow: u32,
-    pub TimeMid: u16,
-    pub TimeHighAndVersion: u16,
-    pub ClockSeqHighAndReserved: u8,
-    pub ClockSeqLow: u8,
-    pub Node: [u8; 6],
+    pub _align: [u64; 0],
+    pub time_low: u32,
+    pub time_mid: u16,
+    pub time_high_and_version: u16,
+    pub clock_seq_high_and_reserved: u8,
+    pub clock_seq_low: u8,
+    pub node: [u8; 6],
 }
 
 //
 // Appendix C: Status Codes, p2347
 //
 
-pub const SUCCESS: STATUS = 0;
+pub const SUCCESS: Status = 0;
 pub const MAX_BIT: usize = !(!0usize >> 1);
 
 //
@@ -49,12 +48,12 @@ pub const MAX_BIT: usize = !(!0usize >> 1);
 //
 
 #[repr(C)]
-pub struct TABLE_HEADER {
-    pub Signature: u64,
-    pub Revision: u32,
-    pub HeaderSize: u32,
-    pub CRC32: u32,
-    pub Reserved: u32,
+pub struct TableHeader {
+    pub signature: u64,
+    pub revision: u32,
+    pub header_size: u32,
+    pub crc32: u32,
+    pub reserved: u32,
 }
 
 //
@@ -62,20 +61,20 @@ pub struct TABLE_HEADER {
 //
 
 #[repr(C)]
-pub struct SYSTEM_TABLE {
-    pub Hdr: TABLE_HEADER,
-    pub FirmwareVendor: *const u16,
-    pub FirmwareRevision: u32,
-    pub ConsoleInHandle: HANDLE,
-    pub ConIn: *const SIMPLE_TEXT_INPUT_PROTOCOL,
-    pub ConsoleOutHandle: HANDLE,
-    pub ConOut: *const SIMPLE_TEXT_OUTPUT_PROTOCOL,
-    pub StandardErrorHandle: HANDLE,
-    pub StdErr: *const SIMPLE_TEXT_OUTPUT_PROTOCOL,
-    pub RuntimeServices: *const RUNTIME_SERVICES,
-    pub BootServices: *const BOOT_SERVICES,
-    pub NumberOfTableEntries: usize,
-    pub ConfigurationTable: *const CONFIGURATION_TABLE,
+pub struct SystemTable {
+    pub hdr: TableHeader,
+    pub firmware_vendor: *const u16,
+    pub firmware_revision: u32,
+    pub console_in_handle: Handle,
+    pub con_in: *const SimpleTextInputProtocol,
+    pub console_out_handle: Handle,
+    pub con_out: *const SimpleTextOutputProtocol,
+    pub standard_error_handle: Handle,
+    pub std_err: *const SimpleTextOutputProtocol,
+    pub runtime_services: *const RuntimeServices,
+    pub boot_services: *const BootServices,
+    pub number_of_table_entries: usize,
+    pub configuration_table: *const ConfigurationTable,
 }
 
 //
@@ -83,86 +82,112 @@ pub struct SYSTEM_TABLE {
 //
 
 #[repr(C)]
-pub struct BOOT_SERVICES {
-    pub Hdr: TABLE_HEADER,
+pub struct BootServices {
+    pub hdr: TableHeader,
 
-    pub RaiseTPL: RAISE_TPL,
-    pub RestoreTPL: RESTORE_TPL,
+    pub raise_tpl: RaiseTpl,
+    pub restore_tpl: RestoreTpl,
 
-    pub AllocatePages: ALLOCATE_PAGES,
-    pub FreePages: FREE_PAGES,
-    pub GetMemoryMap: GET_MEMORY_MAP,
-    pub AllocatePool: ALLOCATE_POOL,
-    pub FreePool: FREE_POOL,
+    pub allocate_pages: AllocatePages,
+    pub free_pages: FreePages,
+    pub get_memory_map: GetMemoryMap,
+    pub allocate_pool: AllocatePool,
+    pub free_pool: FreePool,
 
     /*
-    pub CreateEvent: CREATE_EVENT,
-    pub SetTimer: SET_TIMER,
-    pub WaitForEvent: WAIT_FOR_EVENT,
-    pub SignalEvent: SIGNAL_EVENT,
-    pub CloseEvent: CLOSE_EVENT,
-    pub CheckEvent: CHECK_EVENT,
+    pub create_event: CreateEvent,
+    pub set_timer: SetTimer,
+    pub wait_for_event: WaitForEvent,
+    pub signal_event: SignalEvent,
+    pub close_event: CloseEvent,
+    pub check_event: CheckEvent,
 
-    pub InstallProtocolInterface: INSTALL_PROTOCOL_INTERFACE,
-    pub ReinstallProtocolInterface: REINSTALL_PROTOCOL_INTERFACE,
-    pub UninstallProtocolInterface: UNINSTALL_PROTOCOL_INTERFACE,
-    pub HandleProtocol: HANDLE_PROTOCOL,
-    pub Reserved: *const VOID,
-    pub RegisterProtocolNotify: REGISTER_PROTOCOL_NOTIFY,
-    pub LocateHandle: LOCATE_HANDLE,
-    pub LocateDevicePath: LOCATE_DEVICE_PATH,
-    pub InstallConfigurationTable: INSTALL_CONFIGURATION_TABLE,
+    pub install_protocol_interface: InstallProtocolInterface,
+    pub reinstall_protocol_interface: ReinstallProtocolInterface,
+    pub uninstall_protocol_interface: UninstallProtocolInterface,
+    pub handle_protocol: HandleProtocol,
+    pub reserved: *const Void,
+    pub register_protocol_notify: RegisterProtocolNotify,
+    pub locate_handle: LocateHandle,
+    pub locate_device_path: LocateDevicePath,
+    pub install_configuration_table: InstallConfigurationTable,
 
-    pub LoadImage: IMAGE_LOAD,
-    pub StartImage: IMAGE_START,
-    pub Exit: EXIT,
-    pub UnloadImage: IMAGE_UNLOAD,
-    pub ExitBootServices: EXIT_BOOT_SERVICES,
+    pub load_image: ImageLoad,
+    pub start_image: ImageStart,
+    pub exit: Exit,
+    pub unload_image: ImageUnload,
+    pub exit_boot_services: ExitBootServices,
+    */
 
-    pub GetNextMonotonicCount: GET_NEXT_MONOTONIC_COUNT,
-    pub Stall: STALL,
-    pub SetWatchdogTimer: SET_WATCHDOG_TIMER,
+    pub create_event: *const (),
+    pub set_timer: *const (),
+    pub wait_for_event: *const (),
+    pub signal_event: *const (),
+    pub close_event: *const (),
+    pub check_event: *const (),
 
-    pub ConnectController: CONNECT_CONTROLLER,
-    pub DisconnectController: DISCONNECT_CONTROLLER,
+    pub install_protocol_interface: *const (),
+    pub reinstall_protocol_interface: *const (),
+    pub uninstall_protocol_interface: *const (),
+    pub handle_protocol: *const (),
+    pub reserved: *const Void,
+    pub register_protocol_notify: *const (),
+    pub locate_handle: *const (),
+    pub locate_device_path: *const (),
+    pub install_configuration_table: *const (),
 
-    pub OpenProtocol: OPEN_PROTOCOL,
-    pub CloseProtocol: CLOSE_PROTOCOL,
-    pub OpenProtocolInformation: OPEN_PROTOCOL_INFORMATION,
+    pub load_image: *const (),
+    pub start_image: *const (),
+    pub exit: *const (),
+    pub unload_image: *const (),
+    pub exit_boot_services: ExitBootServices,
 
-    pub ProtocolsPerHandle: PROTOCOLS_PER_HANDLE,
-    pub LocateHandleBuffer: LOCATE_HANDLE_BUFFER,
-    pub LocateProtocol: LOCATE_PROTOCOL,
-    pub InstallMultipleProtocolInterfaces: INSTALL_MULTIPLE_PROTOCOL_INTERFACES,
-    pub UninstallMultipleProtocolInterfaces: UNINSTALL_MULTIPLE_PROTOCOL_INTERFACES,
+    /*
+    pub get_next_monotonic_count: GetNextMonotonicCount,
+    pub stall: Stall,
+    pub set_watchdog_timer: SetWatchdogTimer,
 
-    pub CalculateCrc32: CALCULATE_CRC32,
+    pub connect_controller: ConnectController,
+    pub disconnect_controller: DisconnectController,
 
-    pub CopyMem: COPY_MEM,
-    pub SetMem: SET_MEM,
-    pub CreateEventEx: CREATE_EVENT_EX,
+    pub open_protocol: OpenProtocol,
+    pub close_protocol: CloseProtocol,
+    pub open_protocol_information: OpenProtocolInformation,
+
+    pub protocols_per_handle: ProtocolsPerHandle,
+    pub locate_handle_buffer: LocateHandleBuffer,
+    pub locate_protocol: LocateProtocol,
+    pub install_multiple_protocol_interfaces: InstallMultipleProtocolInterfaces,
+    pub uninstall_multiple_protocol_interfaces: UninstallMultipleProtocolInterfaces,
+
+    pub calculate_crc32: CalculateCrc32,
+
+    pub copy_mem: CopyMem,
+    pub set_mem: SetMem,
+    pub create_event_ex: CreateEventEx,
     */
 }
 
-pub type RAISE_TPL = extern "win64" fn(TPL) -> TPL;
-pub type TPL = usize;
-pub type RESTORE_TPL = extern "win64" fn(TPL);
+pub type RaiseTpl = extern "win64" fn(Tpl) -> Tpl;
+pub type Tpl = usize;
+pub type RestoreTpl = extern "win64" fn(Tpl);
 
-pub type ALLOCATE_PAGES = extern "win64" fn(
-    ALLOCATE_TYPE,
-    MEMORY_TYPE,
+pub type AllocatePages = extern "win64" fn(
+    AllocateType,
+    MemoryType,
     usize,
-    *mut PHYSICAL_ADDRESS,
-    ) -> STATUS;
+    *mut PhysicalAddress,
+    ) -> Status;
 #[repr(C, u32)]
-pub enum ALLOCATE_TYPE {
+pub enum AllocateType {
     AllocateAnyPages,
     AllocateMaxAddress,
     AllocateAddress,
     MaxAllocateType,
 }
+#[derive(Debug)]
 #[repr(C, u32)]
-pub enum MEMORY_TYPE {
+pub enum MemoryType {
     ReservedMemoryType,
     LoaderCode,
     LoaderData,
@@ -180,64 +205,70 @@ pub enum MEMORY_TYPE {
     PersistentMemory,
     MaxMemoryType,
 }
-pub type PHYSICAL_ADDRESS = u64;
-pub type FREE_PAGES = extern "win64" fn(
-    PHYSICAL_ADDRESS,
+pub type PhysicalAddress = u64;
+pub type FreePages = extern "win64" fn(
+    PhysicalAddress,
     usize,
-    ) -> STATUS;
-pub type GET_MEMORY_MAP = extern "win64" fn(
+    ) -> Status;
+pub type GetMemoryMap = extern "win64" fn(
     *mut usize,
-    *mut MEMORY_DESCRIPTOR,
+    *mut MemoryDescriptor,
     *mut usize,
     *mut usize,
     *mut u32,
-    ) -> STATUS;
+    ) -> Status;
+#[derive(Debug)]
 #[repr(C)]
-pub struct MEMORY_DESCRIPTOR {
-    pub Type: u32,
-    pub PhysicalStart: PHYSICAL_ADDRESS,
-    pub VirtualStart: VIRTUAL_ADDRESS,
-    pub NumberOfPages: u64,
-    pub Attribute: u64,
+pub struct MemoryDescriptor {
+    pub type_: MemoryType,  // = UINT32
+    pub physical_start: PhysicalAddress,
+    pub virtual_start: VirtualAddress,
+    pub number_of_pages: u64,
+    pub attribute: u64,
 }
-pub type VIRTUAL_ADDRESS = u64;
+pub type VirtualAddress = u64;
 pub const MEMORY_DESCRIPTOR_VERSION: u32 = 1;
 
-pub type ALLOCATE_POOL = extern "win64" fn(
-    MEMORY_TYPE,
+pub type AllocatePool = extern "win64" fn(
+    MemoryType,
     usize,
-    *mut *mut VOID,
-    ) -> STATUS;
-pub type FREE_POOL = extern "win64" fn(*mut VOID) -> STATUS;
+    *mut *mut Void,
+    ) -> Status;
+pub type FreePool = extern "win64" fn(*mut Void) -> Status;
+
+pub type ExitBootServices = extern "win64" fn(
+    Handle,
+    usize,
+    );
 
 //
 // 4.5 EFI Runtime Services Table, p102
 //
 
 #[repr(C)]
-pub struct RUNTIME_SERVICES {
-    pub Hdr: TABLE_HEADER,
+pub struct RuntimeServices {
+    pub hdr: TableHeader,
 
     /*
-    pub GetTime: GET_TIME,
-    pub SetTime: SET_TIME,
-    pub GetWakeupTime: GET_WAKEUP_TIME,
-    pub SetWakeupTime: SET_WAKEUP_TIME,
+    pub get_time: GetTime,
+    pub set_time: SetTime,
+    pub get_wakeup_time: GetWakeupTime,
+    pub set_wakeup_time: SetWakeupTime,
 
-    pub SetVirtualAddressMap: SET_VIRTUAL_ADDRESS_MAP,
-    pub ConvertPointer: CONVERT_POINTER,
+    pub set_virtual_address_map: SetVirtualAddressMap,
+    pub convert_pointer: ConvertPointer,
 
-    pub GetVariable: GET_VARIABLE,
-    pub GetNextVariableName: GET_NEXT_VARIABLE_NAME,
-    pub SetVariable: SET_VARIABLE,
+    pub get_variable: GetVariable,
+    pub get_next_variable_name: GetNextVariableName,
+    pub set_variable: SetVariable,
 
-    pub GetNextHighMonotonicCount: GET_NEXT_HIGH_MONO_COUNT,
-    pub ResetSystem: RESET_SYSTEM,
+    pub get_next_high_monotonic_count: GetNextHighMonoCount,
+    pub reset_system: ResetSystem,
 
-    pub UpdateCapsule: UPDATE_CAPSULE,
-    pub QueryCapsuleCapabilities: QUERY_CAPSULE_CAPABILITIES,
+    pub update_capsule: UpdateCapsule,
+    pub query_capsule_capabilities: QueryCapsuleCapabilities,
 
-    pub QueryVariableInfo: QUERY_VARIABLE_INFO,
+    pub query_variable_info: QueryVariableInfo,
     */
 }
 
@@ -246,7 +277,7 @@ pub struct RUNTIME_SERVICES {
 //
 
 #[repr(C)]
-pub struct CONFIGURATION_TABLE {
-    pub VendorGuid: GUID,
-    pub VendorTable: *const VOID,
+pub struct ConfigurationTable {
+    pub vendor_guid: Guid,
+    pub vendor_table: *const Void,
 }

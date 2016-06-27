@@ -1,20 +1,20 @@
 // https://github.com/tianocore/edk2/blob/master/MdePkg/Include/Protocol/SimpleTextOut.h
 
-use STATUS;
+use Status;
 
 #[repr(C)]
-pub struct SIMPLE_TEXT_OUTPUT_PROTOCOL {
-    pub Reset: TEXT_RESET,
-    pub OutputString: TEXT_STRING,
+pub struct SimpleTextOutputProtocol {
+    pub reset: TextReset,
+    pub output_string: TextString,
     // ...
 }
 
-pub type TEXT_RESET = unsafe extern "win64" fn(
-    *const SIMPLE_TEXT_OUTPUT_PROTOCOL,
+pub type TextReset = unsafe extern "win64" fn(
+    *const SimpleTextOutputProtocol,
     bool,
-    ) -> STATUS;
+    ) -> Status;
 
-pub type TEXT_STRING = unsafe extern "win64" fn(
-    *const SIMPLE_TEXT_OUTPUT_PROTOCOL,
+pub type TextString = unsafe extern "win64" fn(
+    *const SimpleTextOutputProtocol,
     *const u16,
-    ) -> STATUS;
+    ) -> Status;

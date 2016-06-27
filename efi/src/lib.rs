@@ -16,18 +16,18 @@ use core::ops::{CoerceUnsized, Deref, DerefMut};
 use core::ptr::{self, Unique};
 
 
-static mut INSTANCE: Option<(sys::HANDLE, *const sys::SYSTEM_TABLE)> = None;
+static mut INSTANCE: Option<(sys::Handle, *const sys::SystemTable)> = None;
 
 
 // TODO: make this more typed
-pub type Error = sys::STATUS;
+pub type Error = sys::Status;
 
 pub type EfiResult<T> = Result<T, Error>;
 
 /// Converts a low-level `EFI_STATUS` to a high-level `EfiResult`.
 ///
 /// This returns `Ok` if the high (error) bit is not set, and `Err` otherwise.
-pub fn check_status(status: sys::STATUS) -> EfiResult<()> {
+pub fn check_status(status: sys::Status) -> EfiResult<()> {
     // TODO: handle warnings
     if status & sys::MAX_BIT == 0 {
         Ok(())
@@ -39,8 +39,8 @@ pub fn check_status(status: sys::STATUS) -> EfiResult<()> {
 
 /// The main UEFI entry point.
 pub struct Efi {
-    #[allow(dead_code)] image_handle: sys::HANDLE,
-    system_table: *const sys::SYSTEM_TABLE,
+    #[allow(dead_code)] image_handle: sys::Handle,
+    system_table: *const sys::SystemTable,
 }
 
 impl Efi {
@@ -51,8 +51,8 @@ impl Efi {
     /// This is unsafe, because the user must ensure that the arguments are
     /// valid and not null.
     pub unsafe fn new(
-        image_handle: sys::HANDLE,
-        system_table: *const sys::SYSTEM_TABLE) -> Efi
+        image_handle: sys::Handle,
+        system_table: *const sys::SystemTable) -> Efi
     {
         if INSTANCE.is_some() {
             panic!("Efi::new() cannot be called more than once");
@@ -66,12 +66,12 @@ impl Efi {
 
     /// Returns a handle to the console output.
     pub fn stdout(&self) -> SimpleTextOutput {
-        unsafe { SimpleTextOutput::new((*self.system_table).ConOut) }
+        unsafe { SimpleTextOutput::new((*self.system_table).con_out) }
     }
 
     /// Returns a handle to the console standard error.
     pub fn stderr(&self) -> SimpleTextOutput {
-        unsafe { SimpleTextOutput::new((*self.system_table).StdErr) }
+        unsafe { SimpleTextOutput::new((*self.system_table).std_err) }
     }
 
     /// Places an object on the UEFI heap.
@@ -94,8 +94,8 @@ impl Efi {
     /// before exiting boot services.
     pub unsafe fn allocate(&self, size: usize) -> EfiResult<*mut u8> {
         let mut buffer = ptr::null_mut() as *mut u8;
-        let result = ((*(*self.system_table).BootServices).AllocatePool)(
-                sys::MEMORY_TYPE::LoaderData,
+        let result = ((*(*self.system_table).boot_services).allocate_pool)(
+                sys::MemoryType::LoaderData,
                 size,
                 &mut buffer as *mut _ as *mut _);
         check_status(result).map(|_| buffer)
@@ -104,7 +104,7 @@ impl Efi {
     /// Deallocates a block of memory provided by `allocate()`.
     pub unsafe fn deallocate(&self, buffer: *mut u8) {
         // Ignore the result, since nobody checks the result of free() anyway
-        let _ = ((*(*self.system_table).BootServices).FreePool)(buffer as *mut _);
+        let _ = ((*(*self.system_table).boot_services).free_pool)(buffer as *mut _);
     }
 
     /// Invokes the given callback with a reference to a current live `Efi`
@@ -201,7 +201,7 @@ impl<'e, T: fmt::Display + ?Sized> fmt::Display for EfiBox<'e, T> {
 
 /// Provides a simple interface for displaying text.
 pub struct SimpleTextOutput<'e> {
-    out: *const sys::SIMPLE_TEXT_OUTPUT_PROTOCOL,
+    out: *const sys::SimpleTextOutputProtocol,
     _marker: PhantomData<&'e Efi>,
 }
 
@@ -216,7 +216,7 @@ impl<'e> SimpleTextOutput<'e> {
     /// This is unsafe because the user must check that the handle points to a
     /// valid object. Also, the user must ensure that the `SimpleTextOutput` is
     /// dropped before exiting boot services.
-    pub unsafe fn new(out: *const sys::SIMPLE_TEXT_OUTPUT_PROTOCOL) -> SimpleTextOutput<'e> {
+    pub unsafe fn new(out: *const sys::SimpleTextOutputProtocol) -> SimpleTextOutput<'e> {
         SimpleTextOutput {
             out: out,
             _marker: PhantomData,
@@ -233,7 +233,7 @@ impl<'e> SimpleTextOutput<'e> {
                 *d = c as u16;  // UCS-2
             }
             let status = unsafe {
-                ((*self.out).OutputString)(self.out, buffer.as_ptr())
+                ((*self.out).output_string)(self.out, buffer.as_ptr())
             };
             check_status(status)?;
         }
