@@ -46,6 +46,15 @@ pub struct Efi {
 impl Efi {
     /// Constructs a UEFI wrapper.
     ///
+    /// This also initializes the global instance used by `Efi::with_instance`.
+    ///
+    /// You should call this constructor *once* at the beginning of your
+    /// application, and share the resulting object throughout the program.
+    ///
+    /// # Panics
+    ///
+    /// Panics if this method is called more than once.
+    ///
     /// # Safety
     ///
     /// This is unsafe, because the user must ensure that the arguments are
@@ -188,13 +197,28 @@ impl Drop for Efi {
 }
 
 
+/// An object allocated on the UEFI heap.
+///
+/// # Leaks
+///
+/// If you drop an `EfiBox` after exiting boot services, the backing memory will
+/// be leaked. While this behavior is safe, it is usually not what you want.
 pub struct EfiBox<T: ?Sized> { ptr: Unique<T> }
 
 impl<T: ?Sized> EfiBox<T> {
+    /// Constructs an `EfiBox` from a raw pointer.
+    ///
+    /// # Safety
+    ///
+    /// The pointer must originate from the UEFI allocator itself. If not, this
+    /// call may result in undefined behavior.
     pub unsafe fn from_raw(ptr: *mut T) -> Self {
         EfiBox { ptr: Unique::new(ptr) }
     }
 
+    /// Extracts the raw pointer from an `EfiBox`.
+    ///
+    /// The user is then responsible for freeing the underlying memory.
     pub fn into_raw(self) -> *mut T {
         *self.ptr
     }
@@ -304,6 +328,10 @@ impl<'e> SimpleTextOutput<'e> {
 }
 
 
+/// Represents a UEFI memory map.
+///
+/// Internally, this is an array of `MemoryDescriptor` values and supports the
+/// usual operations (indexing/iteration).
 #[derive(Debug)]
 pub struct MemoryMap {
     ptr: *mut sys::MemoryDescriptor,
@@ -312,6 +340,25 @@ pub struct MemoryMap {
 }
 
 impl MemoryMap {
+    /// Constructs a memory map.
+    ///
+    /// This takes ownership of the underlying buffer, and will deallocate it
+    /// on drop.
+    ///
+    /// This is a low-level constructor: you most likely want to use
+    /// `Efi::memory_map()` instead.
+    ///
+    /// # Panics
+    ///
+    /// Panics if:
+    ///
+    /// * The pointer is null
+    /// * The descriptor size is zero
+    /// * The memory map size is not a multiple of the descriptor size
+    ///
+    /// # Safety
+    ///
+    /// This is unsafe because the arguments must specify a valid memory map.
     pub unsafe fn from_raw(
         ptr: *mut sys::MemoryDescriptor,
         memory_map_size: usize,
@@ -327,10 +374,12 @@ impl MemoryMap {
         }
     }
 
+    /// Returns the number of entries in the memory map.
     pub fn len(&self) -> usize {
         self.memory_map_size / self.descriptor_size
     }
 
+    /// Returns an iterator over the memory map.
     pub fn iter(&self) -> MemoryMapIter {
         MemoryMapIter {
             _marker: PhantomData,
@@ -340,6 +389,7 @@ impl MemoryMap {
         }
     }
 
+    /// Returns a mutable iterator over the memory map.
     pub fn iter_mut(&mut self) -> MemoryMapMutIter {
         MemoryMapMutIter {
             _marker: PhantomData,
@@ -374,6 +424,7 @@ impl<'a> IntoIterator for &'a mut MemoryMap {
 
 pub use sys::{MemoryDescriptor, MemoryType, PhysicalAddress, VirtualAddress, MemoryAttribute};
 
+/// Iterator for `MemoryMap`.
 #[derive(Debug)]
 pub struct MemoryMapIter<'a> {
     _marker: PhantomData<&'a MemoryMap>,
@@ -398,6 +449,7 @@ impl<'a> Iterator for MemoryMapIter<'a> {
     }
 }
 
+/// Iterator for `MemoryMap`.
 #[derive(Debug)]
 pub struct MemoryMapMutIter<'a> {
     _marker: PhantomData<&'a MemoryMap>,

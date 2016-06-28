@@ -243,6 +243,7 @@ pub enum MemoryType {
     MaxMemoryType,
 }
 
+/// Represents a UEFI memory descriptor.
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct MemoryDescriptor {
