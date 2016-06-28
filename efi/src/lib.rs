@@ -217,6 +217,7 @@ impl<T: ?Sized> DerefMut for EfiBox<T> {
 
 impl<T: ?Sized> Drop for EfiBox<T> {
     fn drop(&mut self) {
+        unsafe { ptr::drop_in_place(*self.ptr); }
         Efi::with_instance(|efi| unsafe { efi.deallocate(*self.ptr as *mut _) });
     }
 }
