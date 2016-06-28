@@ -334,6 +334,24 @@ impl<'e> MemoryMap<'e> {
     pub fn len(&self) -> usize {
         self.memory_map_size / self.descriptor_size
     }
+
+    pub fn iter<'a>(&'a self) -> MemoryMapIter<'a, 'e> {
+        MemoryMapIter {
+            _marker: PhantomData,
+            ptr: self.ptr,
+            memory_map_size: self.memory_map_size,
+            descriptor_size: self.descriptor_size,
+        }
+    }
+
+    pub fn iter_mut<'a>(&'a mut self) -> MemoryMapMutIter<'a, 'e> {
+        MemoryMapMutIter {
+            _marker: PhantomData,
+            ptr: self.ptr,
+            memory_map_size: self.memory_map_size,
+            descriptor_size: self.descriptor_size,
+        }
+    }
 }
 
 impl<'e> Drop for MemoryMap<'e> {
@@ -346,12 +364,15 @@ impl<'a, 'e: 'a> IntoIterator for &'a MemoryMap<'e> {
     type Item = &'a MemoryDescriptor;
     type IntoIter = MemoryMapIter<'a, 'e>;
     fn into_iter(self) -> Self::IntoIter {
-        MemoryMapIter {
-            _marker: PhantomData,
-            ptr: self.ptr,
-            memory_map_size: self.memory_map_size,
-            descriptor_size: self.descriptor_size,
-        }
+        self.iter()
+    }
+}
+
+impl<'a, 'e: 'a> IntoIterator for &'a mut MemoryMap<'e> {
+    type Item = &'a mut MemoryDescriptor;
+    type IntoIter = MemoryMapMutIter<'a, 'e>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
     }
 }
 
@@ -367,6 +388,30 @@ pub struct MemoryMapIter<'a, 'e: 'a> {
 
 impl<'a, 'e> Iterator for MemoryMapIter<'a, 'e> {
     type Item = &'a MemoryDescriptor;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.memory_map_size == 0 {
+            None
+        } else {
+            unsafe {
+                let result = mem::transmute(self.ptr);
+                self.ptr = (self.ptr as *mut u8).offset(self.descriptor_size as isize) as *mut _;
+                self.memory_map_size -= self.descriptor_size;
+                Some(result)
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct MemoryMapMutIter<'a, 'e: 'a> {
+    _marker: PhantomData<&'a MemoryMap<'e>>,
+    ptr: *mut sys::MemoryDescriptor,
+    memory_map_size: usize,
+    descriptor_size: usize,
+}
+
+impl<'a, 'e> Iterator for MemoryMapMutIter<'a, 'e> {
+    type Item = &'a mut MemoryDescriptor;
     fn next(&mut self) -> Option<Self::Item> {
         if self.memory_map_size == 0 {
             None
