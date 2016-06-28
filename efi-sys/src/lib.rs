@@ -27,7 +27,7 @@ pub type Handle = *const Void;
 // Appendix A: GUID and Time Formats, p2335
 //
 
-#[derive(Debug)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct Guid {
     // FIXME: use repr(align = "64") instead
@@ -186,7 +186,7 @@ pub type AllocatePages = extern "win64" fn(
     usize,
     *mut PhysicalAddress,
     ) -> Status;
-#[derive(Debug)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C, u32)]
 pub enum AllocateType {
     AllocateAnyPages,
@@ -194,7 +194,7 @@ pub enum AllocateType {
     AllocateAddress,
     MaxAllocateType,
 }
-#[derive(Debug)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C, u32)]
 pub enum MemoryType {
     ReservedMemoryType,
@@ -226,7 +226,7 @@ pub type GetMemoryMap = extern "win64" fn(
     *mut usize,
     *mut u32,
     ) -> Status;
-#[derive(Debug)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct MemoryDescriptor {
     pub type_: MemoryType,  // = UINT32
