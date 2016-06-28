@@ -355,7 +355,7 @@ impl<'a, 'e: 'a> IntoIterator for &'a MemoryMap<'e> {
     }
 }
 
-pub use sys::{MemoryDescriptor, MemoryType, PhysicalAddress, VirtualAddress};
+pub use sys::{MemoryDescriptor, MemoryType, PhysicalAddress, VirtualAddress, MemoryAttribute};
 
 #[derive(Debug)]
 pub struct MemoryMapIter<'a, 'e: 'a> {

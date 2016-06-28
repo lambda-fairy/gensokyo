@@ -9,6 +9,10 @@
 //! Comments in the code refer to the UEFI Specification 2.6, available at
 //! <http://www.uefi.org/sites/default/files/resources/UEFI%20Spec%202_6.pdf>.
 
+#[macro_use] extern crate bitflags;
+
+use core::fmt;
+
 mod protocol;
 pub use protocol::*;
 
@@ -27,7 +31,7 @@ pub type Handle = *const Void;
 // Appendix A: GUID and Time Formats, p2335
 //
 
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct Guid {
     // FIXME: use repr(align = "64") instead
@@ -186,7 +190,30 @@ pub type AllocatePages = extern "win64" fn(
     usize,
     *mut PhysicalAddress,
     ) -> Status;
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub type FreePages = extern "win64" fn(
+    PhysicalAddress,
+    usize,
+    ) -> Status;
+pub type GetMemoryMap = extern "win64" fn(
+    *mut usize,
+    *mut MemoryDescriptor,
+    *mut usize,
+    *mut usize,
+    *mut u32,
+    ) -> Status;
+pub type AllocatePool = extern "win64" fn(
+    MemoryType,
+    usize,
+    *mut *mut Void,
+    ) -> Status;
+pub type FreePool = extern "win64" fn(*mut Void) -> Status;
+
+pub type ExitBootServices = extern "win64" fn(
+    Handle,
+    usize,
+    );
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C, u32)]
 pub enum AllocateType {
     AllocateAnyPages,
@@ -194,7 +221,8 @@ pub enum AllocateType {
     AllocateAddress,
     MaxAllocateType,
 }
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C, u32)]
 pub enum MemoryType {
     ReservedMemoryType,
@@ -214,41 +242,53 @@ pub enum MemoryType {
     PersistentMemory,
     MaxMemoryType,
 }
-pub type PhysicalAddress = u64;
-pub type FreePages = extern "win64" fn(
-    PhysicalAddress,
-    usize,
-    ) -> Status;
-pub type GetMemoryMap = extern "win64" fn(
-    *mut usize,
-    *mut MemoryDescriptor,
-    *mut usize,
-    *mut usize,
-    *mut u32,
-    ) -> Status;
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct MemoryDescriptor {
     pub type_: MemoryType,  // = UINT32
     pub physical_start: PhysicalAddress,
     pub virtual_start: VirtualAddress,
     pub number_of_pages: u64,
-    pub attribute: u64,
+    pub attribute: MemoryAttribute,
 }
-pub type VirtualAddress = u64;
+
 pub const MEMORY_DESCRIPTOR_VERSION: u32 = 1;
 
-pub type AllocatePool = extern "win64" fn(
-    MemoryType,
-    usize,
-    *mut *mut Void,
-    ) -> Status;
-pub type FreePool = extern "win64" fn(*mut Void) -> Status;
+#[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
+pub struct PhysicalAddress(pub u64);
 
-pub type ExitBootServices = extern "win64" fn(
-    Handle,
-    usize,
-    );
+impl fmt::Debug for PhysicalAddress {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "0x{:016x}", self.0)
+    }
+}
+
+#[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
+pub struct VirtualAddress(pub u64);
+
+impl fmt::Debug for VirtualAddress {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "0x{:016x}", self.0)
+    }
+}
+
+bitflags! {
+    pub flags MemoryAttribute: u64 {
+        const MEMORY_UC = 0x0000000000000001,
+        const MEMORY_WC = 0x0000000000000002,
+        const MEMORY_WT = 0x0000000000000004,
+        const MEMORY_WB = 0x0000000000000008,
+        const MEMORY_UCE = 0x0000000000000010,
+        const MEMORY_WP = 0x0000000000001000,
+        const MEMORY_RP = 0x0000000000002000,
+        const MEMORY_XP = 0x0000000000004000,
+        const MEMORY_NV = 0x0000000000008000,
+        const MEMORY_MORE_RELIABLE = 0x0000000000010000,
+        const MEMORY_RO = 0x0000000000020000,
+        const MEMORY_RUNTIME = 0x8000000000000000,
+    }
+}
 
 //
 // 4.5 EFI Runtime Services Table, p102
