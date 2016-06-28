@@ -188,14 +188,11 @@ impl Drop for Efi {
 }
 
 
-pub struct EfiBox<'e, T: ?Sized> {
-    _marker: PhantomData<&'e Efi>,
-    ptr: Unique<T>,
-}
+pub struct EfiBox<T: ?Sized> { ptr: Unique<T> }
 
-impl<'e, T: ?Sized> EfiBox<'e, T> {
+impl<T: ?Sized> EfiBox<T> {
     pub unsafe fn from_raw(ptr: *mut T) -> Self {
-        EfiBox { _marker: PhantomData, ptr: Unique::new(ptr) }
+        EfiBox { ptr: Unique::new(ptr) }
     }
 
     pub fn into_raw(self) -> *mut T {
@@ -203,34 +200,34 @@ impl<'e, T: ?Sized> EfiBox<'e, T> {
     }
 }
 
-impl<'e, T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<EfiBox<'e, U>> for EfiBox<'e, T> {}
+impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<EfiBox<U>> for EfiBox<T> {}
 
-impl<'e, T: ?Sized> Deref for EfiBox<'e, T> {
+impl<T: ?Sized> Deref for EfiBox<T> {
     type Target = T;
     fn deref(&self) -> &T {
         unsafe { self.ptr.get() }
     }
 }
 
-impl<'e, T: ?Sized> DerefMut for EfiBox<'e, T> {
+impl<T: ?Sized> DerefMut for EfiBox<T> {
     fn deref_mut(&mut self) -> &mut T {
         unsafe { self.ptr.get_mut() }
     }
 }
 
-impl<'e, T: ?Sized> Drop for EfiBox<'e, T> {
+impl<T: ?Sized> Drop for EfiBox<T> {
     fn drop(&mut self) {
         Efi::with_instance(|efi| unsafe { efi.deallocate(*self.ptr as *mut _) });
     }
 }
 
-impl<'e, T: fmt::Debug + ?Sized> fmt::Debug for EfiBox<'e, T> {
+impl<T: fmt::Debug + ?Sized> fmt::Debug for EfiBox<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(&**self, f)
     }
 }
 
-impl<'e, T: fmt::Display + ?Sized> fmt::Display for EfiBox<'e, T> {
+impl<T: fmt::Display + ?Sized> fmt::Display for EfiBox<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&**self, f)
     }
@@ -288,7 +285,7 @@ impl<'e> SimpleTextOutput<'e> {
     /// let out = efi.stdout();
     /// write!(out, "Hello, world!\r\n").unwrap();
     /// ```
-    pub fn write_fmt(&'e self, args: fmt::Arguments) -> EfiResult<()> {
+    pub fn write_fmt(&self, args: fmt::Arguments) -> EfiResult<()> {
         struct Writer<'e> {
             inner: &'e SimpleTextOutput<'e>,
             result: EfiResult<()>,
@@ -307,14 +304,13 @@ impl<'e> SimpleTextOutput<'e> {
 
 
 #[derive(Debug)]
-pub struct MemoryMap<'e> {
-    _marker: PhantomData<&'e Efi>,
+pub struct MemoryMap {
     ptr: *mut sys::MemoryDescriptor,
     memory_map_size: usize,
     descriptor_size: usize,
 }
 
-impl<'e> MemoryMap<'e> {
+impl MemoryMap {
     pub unsafe fn from_raw(
         ptr: *mut sys::MemoryDescriptor,
         memory_map_size: usize,
@@ -324,7 +320,6 @@ impl<'e> MemoryMap<'e> {
         assert!(descriptor_size > 0);
         assert!(memory_map_size % descriptor_size == 0);
         MemoryMap {
-            _marker: PhantomData,
             ptr: ptr,
             memory_map_size: memory_map_size,
             descriptor_size: descriptor_size,
@@ -335,7 +330,7 @@ impl<'e> MemoryMap<'e> {
         self.memory_map_size / self.descriptor_size
     }
 
-    pub fn iter<'a>(&'a self) -> MemoryMapIter<'a, 'e> {
+    pub fn iter(&self) -> MemoryMapIter {
         MemoryMapIter {
             _marker: PhantomData,
             ptr: self.ptr,
@@ -344,7 +339,7 @@ impl<'e> MemoryMap<'e> {
         }
     }
 
-    pub fn iter_mut<'a>(&'a mut self) -> MemoryMapMutIter<'a, 'e> {
+    pub fn iter_mut(&mut self) -> MemoryMapMutIter {
         MemoryMapMutIter {
             _marker: PhantomData,
             ptr: self.ptr,
@@ -354,23 +349,23 @@ impl<'e> MemoryMap<'e> {
     }
 }
 
-impl<'e> Drop for MemoryMap<'e> {
+impl Drop for MemoryMap {
     fn drop(&mut self) {
         Efi::with_instance(|efi| unsafe { efi.deallocate(self.ptr as *mut _) });
     }
 }
 
-impl<'a, 'e: 'a> IntoIterator for &'a MemoryMap<'e> {
+impl<'a> IntoIterator for &'a MemoryMap {
     type Item = &'a MemoryDescriptor;
-    type IntoIter = MemoryMapIter<'a, 'e>;
+    type IntoIter = MemoryMapIter<'a>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-impl<'a, 'e: 'a> IntoIterator for &'a mut MemoryMap<'e> {
+impl<'a> IntoIterator for &'a mut MemoryMap {
     type Item = &'a mut MemoryDescriptor;
-    type IntoIter = MemoryMapMutIter<'a, 'e>;
+    type IntoIter = MemoryMapMutIter<'a>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter_mut()
     }
@@ -379,14 +374,14 @@ impl<'a, 'e: 'a> IntoIterator for &'a mut MemoryMap<'e> {
 pub use sys::{MemoryDescriptor, MemoryType, PhysicalAddress, VirtualAddress, MemoryAttribute};
 
 #[derive(Debug)]
-pub struct MemoryMapIter<'a, 'e: 'a> {
-    _marker: PhantomData<&'a MemoryMap<'e>>,
+pub struct MemoryMapIter<'a> {
+    _marker: PhantomData<&'a MemoryMap>,
     ptr: *mut sys::MemoryDescriptor,
     memory_map_size: usize,
     descriptor_size: usize,
 }
 
-impl<'a, 'e> Iterator for MemoryMapIter<'a, 'e> {
+impl<'a> Iterator for MemoryMapIter<'a> {
     type Item = &'a MemoryDescriptor;
     fn next(&mut self) -> Option<Self::Item> {
         if self.memory_map_size == 0 {
@@ -403,14 +398,14 @@ impl<'a, 'e> Iterator for MemoryMapIter<'a, 'e> {
 }
 
 #[derive(Debug)]
-pub struct MemoryMapMutIter<'a, 'e: 'a> {
-    _marker: PhantomData<&'a MemoryMap<'e>>,
+pub struct MemoryMapMutIter<'a> {
+    _marker: PhantomData<&'a MemoryMap>,
     ptr: *mut sys::MemoryDescriptor,
     memory_map_size: usize,
     descriptor_size: usize,
 }
 
-impl<'a, 'e> Iterator for MemoryMapMutIter<'a, 'e> {
+impl<'a> Iterator for MemoryMapMutIter<'a> {
     type Item = &'a mut MemoryDescriptor;
     fn next(&mut self) -> Option<Self::Item> {
         if self.memory_map_size == 0 {
