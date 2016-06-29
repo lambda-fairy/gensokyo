@@ -440,7 +440,7 @@ impl<'a> Iterator for MemoryMapIter<'a> {
             None
         } else {
             unsafe {
-                let result = mem::transmute(self.ptr);
+                let result = &*self.ptr;
                 self.ptr = (self.ptr as *mut u8).offset(self.descriptor_size as isize) as *mut _;
                 self.memory_map_size -= self.descriptor_size;
                 Some(result)
@@ -465,7 +465,7 @@ impl<'a> Iterator for MemoryMapMutIter<'a> {
             None
         } else {
             unsafe {
-                let result = mem::transmute(self.ptr);
+                let result = &mut *self.ptr;
                 self.ptr = (self.ptr as *mut u8).offset(self.descriptor_size as isize) as *mut _;
                 self.memory_map_size -= self.descriptor_size;
                 Some(result)
