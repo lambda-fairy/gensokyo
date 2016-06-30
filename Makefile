@@ -78,6 +78,7 @@ doc: $(doc_dir)
 
 doc-upload: $(doc_dir)
 	cd $(doc_dir) && \
+		rm -rf .git && \
 		git init && \
 		git remote add origin git@github.com:lfairy/akira.git && \
 		git add . && \
