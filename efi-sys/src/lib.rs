@@ -106,31 +106,6 @@ pub struct BootServices {
     pub allocate_pool: AllocatePool,
     pub free_pool: FreePool,
 
-    /*
-    pub create_event: CreateEvent,
-    pub set_timer: SetTimer,
-    pub wait_for_event: WaitForEvent,
-    pub signal_event: SignalEvent,
-    pub close_event: CloseEvent,
-    pub check_event: CheckEvent,
-
-    pub install_protocol_interface: InstallProtocolInterface,
-    pub reinstall_protocol_interface: ReinstallProtocolInterface,
-    pub uninstall_protocol_interface: UninstallProtocolInterface,
-    pub handle_protocol: HandleProtocol,
-    pub reserved: *const Void,
-    pub register_protocol_notify: RegisterProtocolNotify,
-    pub locate_handle: LocateHandle,
-    pub locate_device_path: LocateDevicePath,
-    pub install_configuration_table: InstallConfigurationTable,
-
-    pub load_image: ImageLoad,
-    pub start_image: ImageStart,
-    pub exit: Exit,
-    pub unload_image: ImageUnload,
-    pub exit_boot_services: ExitBootServices,
-    */
-
     pub create_event: *const (),
     pub set_timer: *const (),
     pub wait_for_event: *const (),
@@ -150,17 +125,16 @@ pub struct BootServices {
 
     pub load_image: *const (),
     pub start_image: *const (),
-    pub exit: *const (),
+    pub exit: Exit,
     pub unload_image: *const (),
     pub exit_boot_services: ExitBootServices,
 
-    /*
     pub get_next_monotonic_count: GetNextMonotonicCount,
     pub stall: Stall,
     pub set_watchdog_timer: SetWatchdogTimer,
 
-    pub connect_controller: ConnectController,
-    pub disconnect_controller: DisconnectController,
+    pub connect_controller: *const (),
+    pub disconnect_controller: *const (),
 
     pub open_protocol: OpenProtocol,
     pub close_protocol: CloseProtocol,
@@ -169,16 +143,19 @@ pub struct BootServices {
     pub protocols_per_handle: ProtocolsPerHandle,
     pub locate_handle_buffer: LocateHandleBuffer,
     pub locate_protocol: LocateProtocol,
-    pub install_multiple_protocol_interfaces: InstallMultipleProtocolInterfaces,
-    pub uninstall_multiple_protocol_interfaces: UninstallMultipleProtocolInterfaces,
+    pub install_multiple_protocol_interfaces: *const (),
+    pub uninstall_multiple_protocol_interfaces: *const (),
 
-    pub calculate_crc32: CalculateCrc32,
+    pub calculate_crc32: *const (),
 
-    pub copy_mem: CopyMem,
-    pub set_mem: SetMem,
-    pub create_event_ex: CreateEventEx,
-    */
+    pub copy_mem: *const (),
+    pub set_mem: *const (),
+    pub create_event_ex: *const (),
 }
+
+//
+// 6 Services -- Boot Services, p127
+//
 
 pub type RaiseTpl = extern "win64" fn(Tpl) -> Tpl;
 pub type Tpl = usize;
@@ -208,10 +185,64 @@ pub type AllocatePool = extern "win64" fn(
     ) -> Status;
 pub type FreePool = extern "win64" fn(*mut Void) -> Status;
 
+pub type Exit = extern "win64" fn(
+    Handle,
+    Status,
+    usize,
+    *const u16,
+    );
 pub type ExitBootServices = extern "win64" fn(
     Handle,
     usize,
     );
+
+pub type GetNextMonotonicCount = extern "win64" fn(*mut u64) -> Status;
+pub type Stall = extern "win64" fn(usize) -> Status;
+pub type SetWatchdogTimer = extern "win64" fn(
+    usize,
+    u64,
+    usize,
+    *const u16,
+    ) -> Status;
+
+pub type OpenProtocol = extern "win64" fn(
+    Handle,
+    *const Guid,
+    *mut *const Void,
+    Handle,
+    Handle,
+    OpenProtocolAttribute,
+    ) -> Status;
+pub type CloseProtocol = extern "win64" fn(
+    Handle,
+    *const Guid,
+    Handle,
+    Handle,
+    ) -> Status;
+pub type OpenProtocolInformation = extern "win64" fn(
+    Handle,
+    *const Guid,
+    *mut *const OpenProtocolInformationEntry,
+    *mut usize,
+    ) -> Status;
+
+pub type ProtocolsPerHandle = extern "win64" fn(
+    Handle,
+    *mut *const *const Guid,
+    *mut usize,
+    ) -> Status;
+pub type LocateHandleBuffer = extern "win64" fn(
+    LocateSearchType,
+    *const Guid,
+    *const Void,
+    *mut usize,
+    *mut *const Handle,
+    ) -> Status;
+pub type LocateProtocol = extern "win64" fn(
+    *const Guid,
+    *const Void,
+    *mut *const Void,
+    ) -> Status;
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C, u32)]
@@ -274,21 +305,45 @@ impl fmt::Debug for VirtualAddress {
     }
 }
 
-bitflags! {
-    pub flags MemoryAttribute: u64 {
-        const MEMORY_UC = 0x0000000000000001,
-        const MEMORY_WC = 0x0000000000000002,
-        const MEMORY_WT = 0x0000000000000004,
-        const MEMORY_WB = 0x0000000000000008,
-        const MEMORY_UCE = 0x0000000000000010,
-        const MEMORY_WP = 0x0000000000001000,
-        const MEMORY_RP = 0x0000000000002000,
-        const MEMORY_XP = 0x0000000000004000,
-        const MEMORY_NV = 0x0000000000008000,
-        const MEMORY_MORE_RELIABLE = 0x0000000000010000,
-        const MEMORY_RO = 0x0000000000020000,
-        const MEMORY_RUNTIME = 0x8000000000000000,
-    }
+bitflags! { pub flags MemoryAttribute: u64 {
+    const MEMORY_UC = 0x0000000000000001,
+    const MEMORY_WC = 0x0000000000000002,
+    const MEMORY_WT = 0x0000000000000004,
+    const MEMORY_WB = 0x0000000000000008,
+    const MEMORY_UCE = 0x0000000000000010,
+    const MEMORY_WP = 0x0000000000001000,
+    const MEMORY_RP = 0x0000000000002000,
+    const MEMORY_XP = 0x0000000000004000,
+    const MEMORY_NV = 0x0000000000008000,
+    const MEMORY_MORE_RELIABLE = 0x0000000000010000,
+    const MEMORY_RO = 0x0000000000020000,
+    const MEMORY_RUNTIME = 0x8000000000000000,
+}}
+
+bitflags! { pub flags OpenProtocolAttribute: u32 {
+    const BY_HANDLE_PROTOCOL = 0x00000001,
+    const GET_PROTOCOL = 0x00000002,
+    const TEST_PROTOCOL = 0x00000004,
+    const BY_CHILD_CONTROLLER = 0x00000008,
+    const BY_DRIVER = 0x00000010,
+    const EXCLUSIVE = 0x00000020,
+}}
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[repr(C)]
+pub struct OpenProtocolInformationEntry {
+    pub agent_handle: Handle,
+    pub controller_handle: Handle,
+    pub attributes: u32,  // TODO: Should this be OpenProtocolAttribute?
+    pub open_count: u32,
+}
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[repr(C, u32)]
+pub enum LocateSearchType {
+    AllHandles,
+    ByRegisterNotify,
+    ByProtocol,
 }
 
 //
@@ -300,7 +355,6 @@ bitflags! {
 pub struct RuntimeServices {
     pub hdr: TableHeader,
 
-    /*
     pub get_time: GetTime,
     pub set_time: SetTime,
     pub get_wakeup_time: GetWakeupTime,
@@ -309,18 +363,92 @@ pub struct RuntimeServices {
     pub set_virtual_address_map: SetVirtualAddressMap,
     pub convert_pointer: ConvertPointer,
 
-    pub get_variable: GetVariable,
-    pub get_next_variable_name: GetNextVariableName,
-    pub set_variable: SetVariable,
+    pub get_variable: *const (),
+    pub get_next_variable_name: *const (),
+    pub set_variable: *const (),
 
-    pub get_next_high_monotonic_count: GetNextHighMonoCount,
+    pub get_next_high_monotonic_count: *const (),
     pub reset_system: ResetSystem,
 
-    pub update_capsule: UpdateCapsule,
-    pub query_capsule_capabilities: QueryCapsuleCapabilities,
+    pub update_capsule: *const (),
+    pub query_capsule_capabilities: *const (),
 
-    pub query_variable_info: QueryVariableInfo,
-    */
+    pub query_variable_info: *const (),
+}
+
+//
+// 7 Services -- Runtime Services, p233
+//
+
+pub type GetTime = extern "win64" fn(*mut Time, *mut TimeCapabilities) -> Status;
+pub type SetTime = extern "win64" fn(*const Time) -> Status;
+pub type GetWakeupTime = extern "win64" fn(
+    *mut bool,
+    *mut bool,
+    *mut Time,
+    ) -> Status;
+pub type SetWakeupTime = extern "win64" fn(bool, *const Time) -> Status;
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[repr(C)]
+pub struct Time {
+    pub year: u16,
+    pub month: u8,
+    pub day: u8,
+    pub hour: u8,
+    pub minute: u8,
+    pub second: u8,
+    pub pad1: u8,
+    pub nanosecond: u32,
+    pub time_zone: i16,
+    pub daylight: Daylight,
+    pub pad2: u8,
+}
+
+bitflags! { pub flags Daylight: u8 {
+    const ADJUST_DAYLIGHT = 0x01,
+    const IN_DAYLIGHT = 0x02,
+}}
+
+pub const UNSPECIFIED_TIMEZONE: i16 = 0x07ff;
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[repr(C)]
+pub struct TimeCapabilities {
+    resolution: u32,
+    accuracy: u32,
+    sets_to_zero: bool,
+}
+
+pub type SetVirtualAddressMap = extern "win64" fn(
+    usize,
+    usize,
+    u32,
+    *const MemoryDescriptor,
+    ) -> Status;
+pub type ConvertPointer = extern "win64" fn(
+    DebugDisposition,
+    *mut *const Void,
+    ) -> Status;
+
+bitflags! { pub flags DebugDisposition: usize {
+    const OPTIONAL_PTR = 0x00000001,
+}}
+
+pub type ResetSystem = extern "win64" fn(
+    ResetType,
+    Status,
+    usize,
+    *const Void,
+    ) -> !;
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[repr(C, u32)]
+pub enum ResetType {
+    Cold,
+    Warm,
+    Shutdown,
+    PlatformSpecific,
 }
 
 //
