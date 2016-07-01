@@ -1,7 +1,7 @@
-efi_target := x86_64-efi-pe
+target := x86_64-unknown-akira
 
-efi_ar := $(efi_target)-ar
-efi_ld := $(efi_target)-ld
+efi_ar := x86_64-efi-pe-ar
+efi_ld := x86_64-efi-pe-ld
 
 # Recursive wildcard function
 # http://blog.jgc.org/2011/07/gnu-make-recursive-wildcard-function.html
@@ -16,11 +16,11 @@ find_rust_files = $(wildcard $1Cargo.*) $(wildcard $1*.rs) \
 all: target/akira.gpt target/akira.iso
 
 # Abbreviations for intermediate build files
-libcore_dir := core/target/$(efi_target)/release/
+libcore_dir := core/target/$(target)/release/
 libcore_rlib := $(libcore_dir)libcore.rlib
-libakira_a := target/$(efi_target)/release/libakira.a
+libakira_a := target/$(target)/release/libakira.a
 bootx64_efi := target/filesystem/efi/boot/bootx64.efi
-doc_dir := target/$(efi_target)/doc
+doc_dir := target/$(target)/doc
 
 # When any of these files change, the main crate will be rebuilt
 all_akira_deps := $(libcore_rlib) \
@@ -30,11 +30,11 @@ all_akira_deps := $(libcore_rlib) \
 
 # Step 1: Build the custom `libcore`
 $(libcore_rlib): $(call find_rust_files,core/)
-	cargo build --release --manifest-path=core/Cargo.toml --features disable_float --target=$(efi_target)
+	cargo build --release --manifest-path=core/Cargo.toml --features disable_float --target=$(target)
 
 # Step 2: Compile the EFI stub
 $(libakira_a): $(all_akira_deps)
-	RUSTFLAGS='-L $(libcore_dir)' cargo build --release --target=$(efi_target)
+	RUSTFLAGS='-L $(libcore_dir)' cargo build --release --target=$(target)
 
 # Step 3: Link the result into an EFI executable
 $(bootx64_efi): $(libakira_a)
@@ -71,7 +71,7 @@ $(doc_dir): $(all_akira_deps)
 	mkdir -p target
 	printf '#!/bin/sh\nexec rustdoc -L $(libcore_dir) $$@' > target/rustdoc
 	chmod +x target/rustdoc
-	RUSTDOC=target/rustdoc RUSTFLAGS='-L $(libcore_dir)' cargo doc --release --target=$(efi_target)
+	RUSTDOC=target/rustdoc RUSTFLAGS='-L $(libcore_dir)' cargo doc --release --target=$(target)
 	touch $@
 
 doc: $(doc_dir)
