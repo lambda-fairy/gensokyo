@@ -157,55 +157,55 @@ pub struct BootServices {
 // 6 Services -- Boot Services, p127
 //
 
-pub type RaiseTpl = extern "win64" fn(Tpl) -> Tpl;
+pub type RaiseTpl = unsafe extern "win64" fn(Tpl) -> Tpl;
 pub type Tpl = usize;
-pub type RestoreTpl = extern "win64" fn(Tpl);
+pub type RestoreTpl = unsafe extern "win64" fn(Tpl);
 
-pub type AllocatePages = extern "win64" fn(
+pub type AllocatePages = unsafe extern "win64" fn(
     AllocateType,
     MemoryType,
     usize,
     *mut PhysicalAddress,
     ) -> Status;
-pub type FreePages = extern "win64" fn(
+pub type FreePages = unsafe extern "win64" fn(
     PhysicalAddress,
     usize,
     ) -> Status;
-pub type GetMemoryMap = extern "win64" fn(
+pub type GetMemoryMap = unsafe extern "win64" fn(
     *mut usize,
     *mut MemoryDescriptor,
     *mut usize,
     *mut usize,
     *mut u32,
     ) -> Status;
-pub type AllocatePool = extern "win64" fn(
+pub type AllocatePool = unsafe extern "win64" fn(
     MemoryType,
     usize,
     *mut *mut Void,
     ) -> Status;
-pub type FreePool = extern "win64" fn(*mut Void) -> Status;
+pub type FreePool = unsafe extern "win64" fn(*mut Void) -> Status;
 
-pub type Exit = extern "win64" fn(
+pub type Exit = unsafe extern "win64" fn(
     Handle,
     Status,
     usize,
     *const u16,
     ) -> Status;
-pub type ExitBootServices = extern "win64" fn(
+pub type ExitBootServices = unsafe extern "win64" fn(
     Handle,
     usize,
     ) -> Status;
 
-pub type GetNextMonotonicCount = extern "win64" fn(*mut u64) -> Status;
-pub type Stall = extern "win64" fn(usize) -> Status;
-pub type SetWatchdogTimer = extern "win64" fn(
+pub type GetNextMonotonicCount = unsafe extern "win64" fn(*mut u64) -> Status;
+pub type Stall = unsafe extern "win64" fn(usize) -> Status;
+pub type SetWatchdogTimer = unsafe extern "win64" fn(
     usize,
     u64,
     usize,
     *const u16,
     ) -> Status;
 
-pub type OpenProtocol = extern "win64" fn(
+pub type OpenProtocol = unsafe extern "win64" fn(
     Handle,
     *const Guid,
     *mut *const Void,
@@ -213,32 +213,32 @@ pub type OpenProtocol = extern "win64" fn(
     Handle,
     OpenProtocolAttribute,
     ) -> Status;
-pub type CloseProtocol = extern "win64" fn(
+pub type CloseProtocol = unsafe extern "win64" fn(
     Handle,
     *const Guid,
     Handle,
     Handle,
     ) -> Status;
-pub type OpenProtocolInformation = extern "win64" fn(
+pub type OpenProtocolInformation = unsafe extern "win64" fn(
     Handle,
     *const Guid,
     *mut *const OpenProtocolInformationEntry,
     *mut usize,
     ) -> Status;
 
-pub type ProtocolsPerHandle = extern "win64" fn(
+pub type ProtocolsPerHandle = unsafe extern "win64" fn(
     Handle,
     *mut *const *const Guid,
     *mut usize,
     ) -> Status;
-pub type LocateHandleBuffer = extern "win64" fn(
+pub type LocateHandleBuffer = unsafe extern "win64" fn(
     LocateSearchType,
     *const Guid,
     *const Void,
     *mut usize,
     *mut *const Handle,
     ) -> Status;
-pub type LocateProtocol = extern "win64" fn(
+pub type LocateProtocol = unsafe extern "win64" fn(
     *const Guid,
     *const Void,
     *mut *const Void,
@@ -380,14 +380,14 @@ pub struct RuntimeServices {
 // 7 Services -- Runtime Services, p233
 //
 
-pub type GetTime = extern "win64" fn(*mut Time, *mut TimeCapabilities) -> Status;
-pub type SetTime = extern "win64" fn(*const Time) -> Status;
-pub type GetWakeupTime = extern "win64" fn(
+pub type GetTime = unsafe extern "win64" fn(*mut Time, *mut TimeCapabilities) -> Status;
+pub type SetTime = unsafe extern "win64" fn(*const Time) -> Status;
+pub type GetWakeupTime = unsafe extern "win64" fn(
     *mut bool,
     *mut bool,
     *mut Time,
     ) -> Status;
-pub type SetWakeupTime = extern "win64" fn(bool, *const Time) -> Status;
+pub type SetWakeupTime = unsafe extern "win64" fn(bool, *const Time) -> Status;
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
@@ -420,13 +420,13 @@ pub struct TimeCapabilities {
     sets_to_zero: bool,
 }
 
-pub type SetVirtualAddressMap = extern "win64" fn(
+pub type SetVirtualAddressMap = unsafe extern "win64" fn(
     usize,
     usize,
     u32,
     *const MemoryDescriptor,
     ) -> Status;
-pub type ConvertPointer = extern "win64" fn(
+pub type ConvertPointer = unsafe extern "win64" fn(
     DebugDisposition,
     *mut *const Void,
     ) -> Status;
@@ -435,7 +435,7 @@ bitflags! { pub flags DebugDisposition: usize {
     const OPTIONAL_PTR = 0x00000001,
 }}
 
-pub type ResetSystem = extern "win64" fn(
+pub type ResetSystem = unsafe extern "win64" fn(
     ResetType,
     Status,
     usize,
