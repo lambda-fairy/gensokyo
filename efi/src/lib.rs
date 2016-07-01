@@ -90,7 +90,7 @@ pub unsafe fn init(
 /// implies, this call disables boot services and hands control of the system
 /// to the client.
 pub struct BootServices {
-    #[allow(dead_code)] image_handle: sys::Handle,
+    image_handle: sys::Handle,
     system_table: *const sys::SystemTable,
 }
 
@@ -180,6 +180,22 @@ impl BootServices {
                     panic!("Could not get memory map (error {:?})", e);
                 },
             }
+        }
+    }
+
+    /// Terminate boot services.
+    pub fn exit_boot_services(self, key: MapKey) -> Result<(), (Error, BootServices)> {
+        let result = unsafe {
+            ((*(*self.system_table).boot_services).exit_boot_services)(
+                self.image_handle,
+                key.0)
+        };
+        match check_status(result) {
+            Ok(..) => {
+                unsafe { STATE = State::Runtime; }
+                Ok(())
+            },
+            Err(e) => Err((e, self)),
         }
     }
 

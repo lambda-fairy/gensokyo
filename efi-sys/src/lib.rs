@@ -190,11 +190,11 @@ pub type Exit = extern "win64" fn(
     Status,
     usize,
     *const u16,
-    );
+    ) -> Status;
 pub type ExitBootServices = extern "win64" fn(
     Handle,
     usize,
-    );
+    ) -> Status;
 
 pub type GetNextMonotonicCount = extern "win64" fn(*mut u64) -> Status;
 pub type Stall = extern "win64" fn(usize) -> Status;
