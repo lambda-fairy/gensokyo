@@ -5,16 +5,16 @@
 extern crate efi;
 extern crate rlibc;
 
-use efi::{sys, Efi};
+use efi::{sys, BootServices};
 
 #[no_mangle]
 pub extern "win64" fn efi_start(
     image_handle: sys::Handle,
     system_table: *const sys::SystemTable) -> sys::Status
 {
-    let efi = unsafe { Efi::new(image_handle, system_table) };
-    for desc in &efi.memory_map() {
-        write!(efi.stdout(), "{:?}\r\n", desc).unwrap();
+    let (bs, _rs) = unsafe { efi::init(image_handle, system_table) };
+    for desc in &bs.memory_map() {
+        write!(bs.stdout(), "{:?}\r\n", desc).unwrap();
     }
     abort();
 }
@@ -28,8 +28,8 @@ pub fn abort() -> ! {
 
 #[lang = "panic_fmt"]
 extern fn panic_fmt(args: core::fmt::Arguments, file: &str, line: u32) -> ! {
-    let _ = Efi::with_instance(|efi| {
-        write!(efi.stdout(), "\r
+    let _ = BootServices::with_instance(|bs| {
+        write!(bs.stdout(), "\r
 \r
 ===================== PANIC ======================\r
 {args}\r

@@ -5,6 +5,14 @@
 #![no_std]
 
 //! This crate provides a high-level interface to UEFI.
+//!
+//! A typical OS loader would proceed as follows:
+//!
+//! 1. Call `efi::init()`
+//! 2. Perform any OS-specific initialization
+//! 3. Get the final memory map with `BootServices::memory_map()`
+//! 4. Finally, call `BootServices::exit_boot_services()` to finish the pre-boot
+//!    process
 
 pub extern crate efi_sys as sys;
 
@@ -14,9 +22,6 @@ use core::marker::{PhantomData, Unsize};
 use core::mem;
 use core::ops::{CoerceUnsized, Deref, DerefMut};
 use core::ptr::{self, Unique};
-
-
-static mut INSTANCE: Option<(sys::Handle, *const sys::SystemTable)> = None;
 
 
 // TODO: make this more typed
@@ -37,42 +42,59 @@ pub fn check_status(status: sys::Status) -> EfiResult<()> {
 }
 
 
-/// The main UEFI entry point.
-pub struct Efi {
+#[derive(Copy, Clone, PartialEq)]
+enum State { Boot, Runtime }
+
+static mut INSTANCE: Option<(sys::Handle, *const sys::SystemTable)> = None;
+static mut STATE: State = State::Boot;
+
+
+/// Initializes the UEFI wrapper.
+///
+/// You should call this function *once* at the beginning of your application,
+/// and share the resulting object throughout the program.
+///
+/// # Panics
+///
+/// Panics if this method is called more than once.
+///
+/// # Safety
+///
+/// This is unsafe, because the user must ensure that the arguments are valid
+/// and not null.
+pub unsafe fn init(
+    image_handle: sys::Handle,
+    system_table: *const sys::SystemTable) -> (BootServices, RuntimeServices)
+{
+    if INSTANCE.is_some() {
+        panic!("efi::init() cannot be called more than once");
+    }
+    INSTANCE = Some((image_handle, system_table));
+    let boot_services = BootServices {
+        image_handle: image_handle,
+        system_table: system_table,
+    };
+    let runtime_services = RuntimeServices {
+        system_table: system_table,
+    };
+    (boot_services, runtime_services)
+}
+
+
+/// UEFI boot services.
+///
+/// A UEFI system has two modes: *boot* mode and *runtime* mode. In boot mode,
+/// the firmware is in control of the system; in return, the client has access
+/// to *boot services* provided by the firmware. To load an OS, the client must
+/// transition to runtime mode by calling `exit_boot_services()`. As its name
+/// implies, this call disables boot services and hands control of the system
+/// to the client.
+pub struct BootServices {
     #[allow(dead_code)] image_handle: sys::Handle,
     system_table: *const sys::SystemTable,
 }
 
-impl Efi {
-    /// Constructs a UEFI wrapper.
-    ///
-    /// This also initializes the global instance used by `Efi::with_instance`.
-    ///
-    /// You should call this constructor *once* at the beginning of your
-    /// application, and share the resulting object throughout the program.
-    ///
-    /// # Panics
-    ///
-    /// Panics if this method is called more than once.
-    ///
-    /// # Safety
-    ///
-    /// This is unsafe, because the user must ensure that the arguments are
-    /// valid and not null.
-    pub unsafe fn new(
-        image_handle: sys::Handle,
-        system_table: *const sys::SystemTable) -> Efi
-    {
-        if INSTANCE.is_some() {
-            panic!("Efi::new() cannot be called more than once");
-        }
-        INSTANCE = Some((image_handle, system_table));
-        Efi {
-            image_handle: image_handle,
-            system_table: system_table,
-        }
-    }
-
+impl BootServices {
     /// Returns a handle to the console output.
     pub fn stdout(&self) -> SimpleTextOutput {
         unsafe { SimpleTextOutput::new((*self.system_table).con_out) }
@@ -154,11 +176,11 @@ impl Efi {
         }
     }
 
-    /// Invokes the given callback with a reference to a current live `Efi`
-    /// object. Returns the result of the callback.
+    /// Invokes the given callback with a reference to a current live
+    /// `BootServices` object. Returns the result of the callback.
     ///
-    /// If there is no current `Efi` object, the callback is ignored and `None`
-    /// is returned instead.
+    /// If there is no current `BootServices` object, the callback is ignored
+    /// and `None` is returned instead.
     ///
     /// This method is useful for writing panic handlers, since they don't have
     /// direct access to the system table.
@@ -169,30 +191,27 @@ impl Efi {
     /// #[lang = "panic_fmt"]
     /// fn panic_fmt(args: core::fmt::Arguments, file: &str, line: u32) -> ! {
     ///     // Log the panic to the console
-    ///     let _ = Efi::with_instance(|efi| {
-    ///         write!(efi.stderr(), "PANIC: {} {} {}\r\n", args, file, line)
+    ///     let _ = BootServices::with_instance(|bs| {
+    ///         write!(bs.stderr(), "PANIC: {} {} {}\r\n", args, file, line)
     ///     });
     ///     loop {}
     /// }
     /// ```
     pub fn with_instance<F, T>(callback: F) -> Option<T> where
-        F: FnOnce(&Efi) -> T
+        F: FnOnce(&BootServices) -> T
     {
+        if unsafe { STATE } != State::Boot {
+            return None;
+        }
         unsafe { INSTANCE }.map(|(image_handle, system_table)| {
-            let efi = Efi {
+            let bs = BootServices {
                 image_handle: image_handle,
                 system_table: system_table,
             };
-            let result = callback(&efi);
-            mem::forget(efi);
+            let result = callback(&bs);
+            mem::forget(bs);
             result
         })
-    }
-}
-
-impl Drop for Efi {
-    fn drop(&mut self) {
-        unsafe { INSTANCE = None; }
     }
 }
 
@@ -242,7 +261,7 @@ impl<T: ?Sized> DerefMut for EfiBox<T> {
 impl<T: ?Sized> Drop for EfiBox<T> {
     fn drop(&mut self) {
         unsafe { ptr::drop_in_place(*self.ptr); }
-        Efi::with_instance(|efi| unsafe { efi.deallocate(*self.ptr as *mut _) });
+        BootServices::with_instance(|bs| unsafe { bs.deallocate(*self.ptr as *mut _) });
     }
 }
 
@@ -262,14 +281,14 @@ impl<T: fmt::Display + ?Sized> fmt::Display for EfiBox<T> {
 /// Provides a simple interface for displaying text.
 pub struct SimpleTextOutput<'e> {
     out: *const sys::SimpleTextOutputProtocol,
-    _marker: PhantomData<&'e Efi>,
+    _marker: PhantomData<&'e BootServices>,
 }
 
 impl<'e> SimpleTextOutput<'e> {
     /// Constructs a `SimpleTextOutput` from a raw protocol handle.
     ///
     /// This is a low-level constructor: you most likely want to use
-    /// `Efi::stdout()` or `Efi::stderr()` instead.
+    /// `BootServices::stdout()` or `BootServices::stderr()` instead.
     ///
     /// # Safety
     ///
@@ -307,7 +326,7 @@ impl<'e> SimpleTextOutput<'e> {
     /// # Examples
     ///
     /// ```rust
-    /// let out = efi.stdout();
+    /// let out = bs.stdout();
     /// write!(out, "Hello, world!\r\n").unwrap();
     /// ```
     pub fn write_fmt(&self, args: fmt::Arguments) -> EfiResult<()> {
@@ -346,7 +365,7 @@ impl MemoryMap {
     /// on drop.
     ///
     /// This is a low-level constructor: you most likely want to use
-    /// `Efi::memory_map()` instead.
+    /// `BootServices::memory_map()` instead.
     ///
     /// # Panics
     ///
@@ -402,7 +421,7 @@ impl MemoryMap {
 
 impl Drop for MemoryMap {
     fn drop(&mut self) {
-        Efi::with_instance(|efi| unsafe { efi.deallocate(self.ptr as *mut _) });
+        BootServices::with_instance(|bs| unsafe { bs.deallocate(self.ptr as *mut _) });
     }
 }
 
@@ -472,4 +491,13 @@ impl<'a> Iterator for MemoryMapMutIter<'a> {
             }
         }
     }
+}
+
+
+/// UEFI runtime services.
+///
+/// This struct contains methods that are available in both boot mode and
+/// runtime mode.
+pub struct RuntimeServices {
+    #[allow(dead_code)] system_table: *const sys::SystemTable,
 }
