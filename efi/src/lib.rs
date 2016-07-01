@@ -142,7 +142,7 @@ impl BootServices {
     }
 
     /// Retrieves a copy of the UEFI memory map.
-    pub fn memory_map(&self) -> MemoryMap {
+    pub fn memory_map(&self) -> (MemoryMap, MapKey) {
         unsafe {
             let mut memory_map_size: usize = 0;
             let mut map_key: usize = 0;
@@ -167,7 +167,14 @@ impl BootServices {
                 &mut descriptor_size as *mut _,
                 &mut descriptor_version as *mut _);
             match check_status(result) {
-                Ok(..) => MemoryMap::from_raw(memory_map, memory_map_size, descriptor_size),
+                Ok(..) => (
+                    MemoryMap::from_raw(
+                        memory_map,
+                        memory_map_size,
+                        descriptor_size,
+                        descriptor_version),
+                    MapKey(map_key),
+                    ),
                 Err(e) => {
                     self.deallocate(memory_map as *mut _);
                     panic!("Could not get memory map (error {:?})", e);
@@ -356,6 +363,7 @@ pub struct MemoryMap {
     ptr: *mut sys::MemoryDescriptor,
     memory_map_size: usize,
     descriptor_size: usize,
+    descriptor_version: u32,
 }
 
 impl MemoryMap {
@@ -381,7 +389,8 @@ impl MemoryMap {
     pub unsafe fn from_raw(
         ptr: *mut sys::MemoryDescriptor,
         memory_map_size: usize,
-        descriptor_size: usize) -> Self
+        descriptor_size: usize,
+        descriptor_version: u32) -> Self
     {
         assert!(!ptr.is_null());
         assert!(descriptor_size > 0);
@@ -390,6 +399,7 @@ impl MemoryMap {
             ptr: ptr,
             memory_map_size: memory_map_size,
             descriptor_size: descriptor_size,
+            descriptor_version: descriptor_version,
         }
     }
 
@@ -440,6 +450,12 @@ impl<'a> IntoIterator for &'a mut MemoryMap {
         self.iter_mut()
     }
 }
+
+/// A memory map key returned by `BootServices::memory_map()`.
+///
+/// This key is needed to call `BootServices::exit_boot_services()`.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct MapKey(usize);
 
 pub use sys::{MemoryDescriptor, MemoryType, PhysicalAddress, VirtualAddress, MemoryAttribute};
 

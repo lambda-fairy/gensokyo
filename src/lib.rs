@@ -13,7 +13,8 @@ pub extern "win64" fn efi_start(
     system_table: *const sys::SystemTable) -> sys::Status
 {
     let (bs, _rs) = unsafe { efi::init(image_handle, system_table) };
-    for desc in &bs.memory_map() {
+    let (memory_map, _map_key) = bs.memory_map();
+    for desc in &memory_map {
         write!(bs.stdout(), "{:?}\r\n", desc).unwrap();
     }
     abort();
