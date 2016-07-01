@@ -30,7 +30,7 @@ pub fn abort() -> ! {
 #[lang = "panic_fmt"]
 extern fn panic_fmt(args: core::fmt::Arguments, file: &str, line: u32) -> ! {
     let _ = BootServices::with_instance(|bs| {
-        write!(bs.stderr(), "\r
+        write!(bs.stdout(), "\r
 \r
 ===================== PANIC ======================\r
 {args}\r
