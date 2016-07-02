@@ -22,6 +22,7 @@ use core::marker::{PhantomData, Unsize};
 use core::mem;
 use core::ops::{CoerceUnsized, Deref, DerefMut};
 use core::ptr::{self, Unique};
+use core::slice;
 
 
 // TODO: make this more typed
@@ -263,6 +264,18 @@ impl<T: ?Sized> EfiBox<T> {
     /// The user is then responsible for freeing the underlying memory.
     pub fn into_raw(self) -> *mut T {
         *self.ptr
+    }
+}
+
+impl<T> EfiBox<[T]> {
+    /// Constructs a boxed slice from a pointer and length.
+    ///
+    /// # Safety
+    ///
+    /// The pointer must originate from the UEFI allocator itself. If not, this
+    /// call may result in undefined behavior.
+    pub unsafe fn from_raw_slice(ptr: *mut T, len: usize) -> Self {
+        EfiBox { ptr: Unique::new(slice::from_raw_parts_mut(ptr, len)) }
     }
 }
 
