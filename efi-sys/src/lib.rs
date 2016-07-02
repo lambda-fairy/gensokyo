@@ -31,19 +31,16 @@ pub type Handle = *const Void;
 // Appendix A: GUID and Time Formats, p2335
 //
 
+// FIXME: add repr(align = "64") here
+// https://github.com/rust-lang/rust/issues/33626
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
-pub struct Guid {
-    // FIXME: use repr(align = "64") instead
-    // https://github.com/rust-lang/rust/issues/33626
-    pub _align: [u64; 0],
-    pub time_low: u32,
-    pub time_mid: u16,
-    pub time_high_and_version: u16,
-    pub clock_seq_high_and_reserved: u8,
-    pub clock_seq_low: u8,
-    pub node: [u8; 6],
-}
+pub struct Guid(
+    pub u32,
+    pub u16,
+    pub u16,
+    pub [u8; 8],
+    );
 
 //
 // Appendix C: Status Codes, p2347

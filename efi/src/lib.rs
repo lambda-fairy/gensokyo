@@ -1,4 +1,5 @@
 #![feature(coerce_unsized)]
+#![feature(associated_consts)]
 #![feature(question_mark)]
 #![feature(unique)]
 #![feature(unsize)]
@@ -17,7 +18,6 @@
 pub extern crate efi_sys as sys;
 
 use core::fmt;
-use core::iter;
 use core::marker::{PhantomData, Unsize};
 use core::mem;
 use core::ops::{CoerceUnsized, Deref, DerefMut};
@@ -97,13 +97,13 @@ pub struct BootServices {
 
 impl BootServices {
     /// Returns a handle to the console output.
-    pub fn stdout(&self) -> SimpleTextOutput {
-        unsafe { SimpleTextOutput::new((*self.system_table).con_out) }
+    pub fn stdout(&self) -> &SimpleTextOutput {
+        unsafe { mem::transmute((*self.system_table).con_out) }
     }
 
     /// Returns a handle to the console standard error.
-    pub fn stderr(&self) -> SimpleTextOutput {
-        unsafe { SimpleTextOutput::new((*self.system_table).std_err) }
+    pub fn stderr(&self) -> &SimpleTextOutput {
+        unsafe { mem::transmute((*self.system_table).std_err) }
     }
 
     /// Places an object on the UEFI heap.
@@ -140,6 +140,26 @@ impl BootServices {
     pub unsafe fn deallocate(&self, buffer: *mut u8) {
         // Ignore the result, since nobody checks the result of free() anyway
         let _ = ((*(*self.system_table).boot_services).free_pool)(buffer as *mut _);
+    }
+
+    /// Returns the first protocol instance that matches the given protocol.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let output = boot_services.locate_protocol::<SimpleTextOutput>()
+    ///     .expect("could not find text output protocol");
+    /// write!(output, "Hello, world!\r\n").unwrap();
+    /// ```
+    pub fn locate_protocol<P: Protocol>(&self) -> Option<&P> {
+        unsafe {
+            let mut interface = ptr::null() as *const P;
+            let _result = ((*(*self.system_table).boot_services).locate_protocol)(
+                    &P::GUID as *const _,
+                    ptr::null(),
+                    &mut interface as *mut _ as *mut _);
+            interface.as_ref()
+        }
     }
 
     /// Retrieves a copy of the UEFI memory map.
@@ -240,6 +260,16 @@ impl BootServices {
 }
 
 
+pub use sys::Guid;
+
+pub trait Protocol {
+    const GUID: Guid;
+}
+
+mod simple_text_output;
+pub use simple_text_output::*;
+
+
 /// An object allocated on the UEFI heap.
 ///
 /// # Leaks
@@ -310,75 +340,6 @@ impl<T: fmt::Debug + ?Sized> fmt::Debug for EfiBox<T> {
 impl<T: fmt::Display + ?Sized> fmt::Display for EfiBox<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&**self, f)
-    }
-}
-
-
-/// Provides a simple interface for displaying text.
-pub struct SimpleTextOutput<'e> {
-    out: *const sys::SimpleTextOutputProtocol,
-    _marker: PhantomData<&'e BootServices>,
-}
-
-impl<'e> SimpleTextOutput<'e> {
-    /// Constructs a `SimpleTextOutput` from a raw protocol handle.
-    ///
-    /// This is a low-level constructor: you most likely want to use
-    /// `BootServices::stdout()` or `BootServices::stderr()` instead.
-    ///
-    /// # Safety
-    ///
-    /// This is unsafe because the user must check that the handle points to a
-    /// valid object. Also, the user must ensure that the `SimpleTextOutput` is
-    /// dropped before exiting boot services.
-    pub unsafe fn new(out: *const sys::SimpleTextOutputProtocol) -> SimpleTextOutput<'e> {
-        SimpleTextOutput {
-            out: out,
-            _marker: PhantomData,
-        }
-    }
-
-    /// Write a string to the handle.
-    pub fn write_str(&self, s: &str) -> EfiResult<()> {
-        let mut buffer = [0u16; 128];
-        let mut chars = s.chars().peekable();
-        while chars.peek().is_some() {
-            let chunk = chars.by_ref().take(buffer.len()-1).chain(iter::once('\0'));
-            for (d, c) in buffer.iter_mut().zip(chunk) {
-                *d = c as u16;  // UCS-2
-            }
-            let status = unsafe {
-                ((*self.out).output_string)(self.out, buffer.as_ptr())
-            };
-            check_status(status)?;
-        }
-        Ok(())
-    }
-
-    /// Write a formatting object to the handle.
-    ///
-    /// This method lets you use the `write!` macro to output formatted text.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// let out = bs.stdout();
-    /// write!(out, "Hello, world!\r\n").unwrap();
-    /// ```
-    pub fn write_fmt(&self, args: fmt::Arguments) -> EfiResult<()> {
-        struct Writer<'e> {
-            inner: &'e SimpleTextOutput<'e>,
-            result: EfiResult<()>,
-        }
-        impl<'e> fmt::Write for Writer<'e> {
-            fn write_str(&mut self, s: &str) -> fmt::Result {
-                self.result = self.inner.write_str(s);
-                self.result.map_err(|_| fmt::Error)
-            }
-        }
-        let mut writer = Writer { inner: self, result: Ok(()) };
-        let _ = fmt::Write::write_fmt(&mut writer, args);
-        writer.result
     }
 }
 
