@@ -14,8 +14,9 @@ pub extern "win64" fn efi_start(
 {
     let (bs, _rs) = unsafe { efi::init(image_handle, system_table) };
     let (memory_map, _map_key) = bs.memory_map();
+    let stdout = bs.locate_protocol::<efi::SimpleTextOutput>().unwrap();
     for desc in &memory_map {
-        write!(bs.stdout(), "{:?}\r\n", desc).unwrap();
+        write!(stdout, "{:?}\r\n", desc).unwrap();
     }
     abort();
 }

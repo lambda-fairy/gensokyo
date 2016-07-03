@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(try_from)]
 #![warn(missing_debug_implementations)]
 
 //! Low-level UEFI definitions.
@@ -11,7 +12,9 @@
 
 #[macro_use] extern crate bitflags;
 
+use core::convert::TryFrom;
 use core::fmt;
+use core::mem;
 
 mod protocol;
 pub use protocol::*;
@@ -43,11 +46,73 @@ pub struct Guid(
     );
 
 //
-// Appendix C: Status Codes, p2347
+// Appendix D: Status Codes, p2347
 //
 
-pub const SUCCESS: Status = 0;
 pub const MAX_BIT: usize = !(!0usize >> 1);
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[repr(usize)]
+pub enum KnownStatus {
+    // NOTE: if you change this list, be sure to change the TryFrom impl as well
+    Success = 0,
+    WarnUnknownGlyph = 1,
+    WarnDeleteFailure = 2,
+    WarnWriteFailure = 3,
+    WarnBufferTooSmall = 4,
+    WarnStaleData = 5,
+    WarnFileSystem = 6,
+    LoadError = MAX_BIT | 1,
+    InvalidParameter = MAX_BIT | 2,
+    Unsupported = MAX_BIT | 3,
+    BadBufferSize = MAX_BIT | 4,
+    BufferTooSmall = MAX_BIT | 5,
+    NotReady = MAX_BIT | 6,
+    DeviceError = MAX_BIT | 7,
+    WriteProtected = MAX_BIT | 8,
+    OutOfResources = MAX_BIT | 9,
+    VolumeCorrupted = MAX_BIT | 10,
+    VolumeFull = MAX_BIT | 11,
+    NoMedia = MAX_BIT | 12,
+    MediaChanged = MAX_BIT | 13,
+    NotFound = MAX_BIT | 14,
+    AccessDenied = MAX_BIT | 15,
+    NoResponse = MAX_BIT | 16,
+    NoMapping = MAX_BIT | 17,
+    Timeout = MAX_BIT | 18,
+    NotStarted = MAX_BIT | 19,
+    AlreadyStarted = MAX_BIT | 20,
+    Aborted = MAX_BIT | 21,
+    IcmpError = MAX_BIT | 22,
+    TftpError = MAX_BIT | 23,
+    ProtocolError = MAX_BIT | 24,
+    IncompatibleVersion = MAX_BIT | 25,
+    SecurityViolation = MAX_BIT | 26,
+    CrcError = MAX_BIT | 27,
+    EndOfMedia = MAX_BIT | 28,
+    EndOfFile = MAX_BIT | 31,
+    InvalidLanguage = MAX_BIT | 32,
+    CompromisedData = MAX_BIT | 33,
+    IpAddressConflict = MAX_BIT | 34,
+    HttpError = MAX_BIT | 35,
+}
+
+impl TryFrom<usize> for KnownStatus {
+    type Err = usize;
+    fn try_from(status: usize) -> Result<Self, usize> {
+        if status <= 6 || ((MAX_BIT | 1) <= status && status <= (MAX_BIT | 35)) {
+            Ok(unsafe { mem::transmute(status) })
+        } else {
+            Err(status)
+        }
+    }
+}
+
+impl Into<usize> for KnownStatus {
+    fn into(self) -> usize {
+        unsafe { mem::transmute(self) }
+    }
+}
 
 //
 // 4.2 EFI Table Header, p94

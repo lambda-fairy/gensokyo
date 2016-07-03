@@ -1,6 +1,7 @@
 #![feature(coerce_unsized)]
 #![feature(associated_consts)]
 #![feature(question_mark)]
+#![feature(try_from)]
 #![feature(unique)]
 #![feature(unsize)]
 #![no_std]
@@ -17,6 +18,7 @@
 
 pub extern crate efi_sys as sys;
 
+use core::convert::TryFrom;
 use core::fmt;
 use core::marker::{PhantomData, Unsize};
 use core::mem;
@@ -25,10 +27,31 @@ use core::ptr::{self, Unique};
 use core::slice;
 
 
-// TODO: make this more typed
-pub type Error = sys::Status;
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum Status {
+    Known(sys::KnownStatus),
+    Unknown(sys::Status),
+}
 
-pub type EfiResult<T> = Result<T, Error>;
+impl From<usize> for Status {
+    fn from(status: usize) -> Self {
+        match sys::KnownStatus::try_from(status) {
+            Ok(s) => Status::Known(s),
+            Err(s) => Status::Unknown(s),
+        }
+    }
+}
+
+impl Into<usize> for Status {
+    fn into(self) -> usize {
+        match self {
+            Status::Known(s) => s.into(),
+            Status::Unknown(s) => s,
+        }
+    }
+}
+
+pub type EfiResult<T> = Result<T, Status>;
 
 /// Converts a low-level `EFI_STATUS` to a high-level `EfiResult`.
 ///
@@ -38,7 +61,7 @@ pub fn check_status(status: sys::Status) -> EfiResult<()> {
     if status & sys::MAX_BIT == 0 {
         Ok(())
     } else {
-        Err(status)
+        Err(Status::from(status))
     }
 }
 
@@ -128,17 +151,17 @@ impl BootServices {
     /// before exiting boot services.
     pub unsafe fn allocate(&self, size: usize) -> *mut u8 {
         let mut buffer = ptr::null_mut() as *mut u8;
-        let result = ((*(*self.system_table).boot_services).allocate_pool)(
+        let status = ((*(*self.system_table).boot_services).allocate_pool)(
                 sys::MemoryType::LoaderData,
                 size,
                 &mut buffer as *mut _ as *mut _);
-        check_status(result).unwrap();
+        check_status(status).unwrap();
         buffer
     }
 
     /// Deallocates a block of memory provided by `allocate()`.
     pub unsafe fn deallocate(&self, buffer: *mut u8) {
-        // Ignore the result, since nobody checks the result of free() anyway
+        // Ignore the status, since nobody checks the result of free() anyway
         let _ = ((*(*self.system_table).boot_services).free_pool)(buffer as *mut _);
     }
 
@@ -154,7 +177,7 @@ impl BootServices {
     pub fn locate_protocol<P: Protocol>(&self) -> Option<&P> {
         unsafe {
             let mut interface = ptr::null() as *const P;
-            let _result = ((*(*self.system_table).boot_services).locate_protocol)(
+            let _status = ((*(*self.system_table).boot_services).locate_protocol)(
                     &P::GUID as *const _,
                     ptr::null(),
                     &mut interface as *mut _ as *mut _);
@@ -181,13 +204,13 @@ impl BootServices {
             memory_map_size += 4 * descriptor_size;
             // Now call it again with an actual buffer
             let memory_map = self.allocate(memory_map_size) as *mut _;
-            let result = ((*(*self.system_table).boot_services).get_memory_map)(
+            let status = ((*(*self.system_table).boot_services).get_memory_map)(
                 &mut memory_map_size as *mut _,
                 memory_map,
                 &mut map_key as *mut _,
                 &mut descriptor_size as *mut _,
                 &mut descriptor_version as *mut _);
-            match check_status(result) {
+            match check_status(status) {
                 Ok(..) => (
                     MemoryMap::from_raw(
                         memory_map,
@@ -205,13 +228,13 @@ impl BootServices {
     }
 
     /// Terminate boot services.
-    pub fn exit_boot_services(self, key: MapKey) -> Result<(), (Error, BootServices)> {
-        let result = unsafe {
+    pub fn exit_boot_services(self, key: MapKey) -> Result<(), (Status, BootServices)> {
+        let status = unsafe {
             ((*(*self.system_table).boot_services).exit_boot_services)(
                 self.image_handle,
                 key.0)
         };
-        match check_status(result) {
+        match check_status(status) {
             Ok(..) => {
                 unsafe { STATE = State::Runtime; }
                 Ok(())
