@@ -242,7 +242,7 @@ pub type LocateProtocol = unsafe extern "win64" fn(
     ) -> Status;
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-#[repr(C, u32)]
+#[repr(u32)]
 pub enum AllocateType {
     AllocateAnyPages,
     AllocateMaxAddress,
@@ -251,7 +251,7 @@ pub enum AllocateType {
 }
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-#[repr(C, u32)]
+#[repr(u32)]
 pub enum MemoryType {
     ReservedMemoryType,
     LoaderCode,
