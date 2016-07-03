@@ -10,7 +10,7 @@ use efi::{sys, BootServices};
 #[no_mangle]
 pub extern "win64" fn efi_start(
     image_handle: sys::Handle,
-    system_table: *const sys::SystemTable) -> sys::Status
+    system_table: *mut sys::SystemTable) -> sys::Status
 {
     let (bs, _rs) = unsafe { efi::init(image_handle, system_table) };
     let (memory_map, _map_key) = bs.memory_map();

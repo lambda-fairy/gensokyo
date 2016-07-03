@@ -16,11 +16,11 @@ pub struct SimpleTextOutputProtocol {
 }
 
 pub type TextReset = unsafe extern "win64" fn(
-    *const SimpleTextOutputProtocol,
+    *mut SimpleTextOutputProtocol,
     bool,
     ) -> Status;
 
 pub type TextString = unsafe extern "win64" fn(
-    *const SimpleTextOutputProtocol,
-    *const u16,
+    *mut SimpleTextOutputProtocol,
+    *mut u16,
     ) -> Status;

@@ -69,7 +69,7 @@ pub fn check_status(status: sys::Status) -> EfiResult<()> {
 #[derive(Copy, Clone, PartialEq)]
 enum State { Boot, Runtime }
 
-static mut INSTANCE: Option<(sys::Handle, *const sys::SystemTable)> = None;
+static mut INSTANCE: Option<(sys::Handle, *mut sys::SystemTable)> = None;
 static mut STATE: State = State::Boot;
 
 
@@ -88,7 +88,7 @@ static mut STATE: State = State::Boot;
 /// and not null.
 pub unsafe fn init(
     image_handle: sys::Handle,
-    system_table: *const sys::SystemTable) -> (BootServices, RuntimeServices)
+    system_table: *mut sys::SystemTable) -> (BootServices, RuntimeServices)
 {
     if INSTANCE.is_some() {
         panic!("efi::init() cannot be called more than once");
@@ -115,7 +115,7 @@ pub unsafe fn init(
 /// to the client.
 pub struct BootServices {
     image_handle: sys::Handle,
-    system_table: *const sys::SystemTable,
+    system_table: *mut sys::SystemTable,
 }
 
 impl BootServices {
@@ -176,10 +176,10 @@ impl BootServices {
     /// ```
     pub fn locate_protocol<P: Protocol>(&self) -> Option<&P> {
         unsafe {
-            let mut interface = ptr::null() as *const P;
+            let mut interface = ptr::null_mut() as *mut P;
             let _status = ((*(*self.system_table).boot_services).locate_protocol)(
-                    &P::GUID as *const _,
-                    ptr::null(),
+                    &P::GUID as *const _ as *mut _,
+                    ptr::null_mut(),
                     &mut interface as *mut _ as *mut _);
             interface.as_ref()
         }
@@ -528,5 +528,5 @@ impl<'a> Iterator for MemoryMapMutIter<'a> {
 /// This struct contains methods that are available in both boot mode and
 /// runtime mode.
 pub struct RuntimeServices {
-    #[allow(dead_code)] system_table: *const sys::SystemTable,
+    #[allow(dead_code)] system_table: *mut sys::SystemTable,
 }

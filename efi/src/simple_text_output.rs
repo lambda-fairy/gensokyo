@@ -23,7 +23,9 @@ impl SimpleTextOutput {
                 *d = c as u16;  // UCS-2
             }
             let status = unsafe {
-                (self.0.output_string)(&self.0 as _, buffer.as_ptr())
+                (self.0.output_string)(
+                    &self.0 as *const _ as *mut _,
+                    buffer.as_ptr() as *mut _)
             };
             check_status(status)?;
         }

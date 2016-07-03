@@ -28,7 +28,7 @@ pub use protocol::*;
 pub enum Void { #[doc(hidden)] _Impossible }
 
 pub type Status = usize;
-pub type Handle = *const Void;
+pub type Handle = *mut Void;
 
 //
 // Appendix A: GUID and Time Formats, p2335
@@ -136,18 +136,18 @@ pub struct TableHeader {
 #[repr(C)]
 pub struct SystemTable {
     pub hdr: TableHeader,
-    pub firmware_vendor: *const u16,
+    pub firmware_vendor: *mut u16,
     pub firmware_revision: u32,
     pub console_in_handle: Handle,
-    pub con_in: *const SimpleTextInputProtocol,
+    pub con_in: *mut SimpleTextInputProtocol,
     pub console_out_handle: Handle,
-    pub con_out: *const SimpleTextOutputProtocol,
+    pub con_out: *mut SimpleTextOutputProtocol,
     pub standard_error_handle: Handle,
-    pub std_err: *const SimpleTextOutputProtocol,
-    pub runtime_services: *const RuntimeServices,
-    pub boot_services: *const BootServices,
+    pub std_err: *mut SimpleTextOutputProtocol,
+    pub runtime_services: *mut RuntimeServices,
+    pub boot_services: *mut BootServices,
     pub number_of_table_entries: usize,
-    pub configuration_table: *const ConfigurationTable,
+    pub configuration_table: *mut ConfigurationTable,
 }
 
 //
@@ -168,35 +168,35 @@ pub struct BootServices {
     pub allocate_pool: AllocatePool,
     pub free_pool: FreePool,
 
-    pub create_event: *const (),
-    pub set_timer: *const (),
-    pub wait_for_event: *const (),
-    pub signal_event: *const (),
-    pub close_event: *const (),
-    pub check_event: *const (),
+    pub create_event: *mut (),
+    pub set_timer: *mut (),
+    pub wait_for_event: *mut (),
+    pub signal_event: *mut (),
+    pub close_event: *mut (),
+    pub check_event: *mut (),
 
-    pub install_protocol_interface: *const (),
-    pub reinstall_protocol_interface: *const (),
-    pub uninstall_protocol_interface: *const (),
-    pub handle_protocol: *const (),
-    pub reserved: *const Void,
-    pub register_protocol_notify: *const (),
-    pub locate_handle: *const (),
-    pub locate_device_path: *const (),
-    pub install_configuration_table: *const (),
+    pub install_protocol_interface: *mut (),
+    pub reinstall_protocol_interface: *mut (),
+    pub uninstall_protocol_interface: *mut (),
+    pub handle_protocol: *mut (),
+    pub reserved: *mut Void,
+    pub register_protocol_notify: *mut (),
+    pub locate_handle: *mut (),
+    pub locate_device_path: *mut (),
+    pub install_configuration_table: *mut (),
 
-    pub load_image: *const (),
-    pub start_image: *const (),
+    pub load_image: *mut (),
+    pub start_image: *mut (),
     pub exit: Exit,
-    pub unload_image: *const (),
+    pub unload_image: *mut (),
     pub exit_boot_services: ExitBootServices,
 
     pub get_next_monotonic_count: GetNextMonotonicCount,
     pub stall: Stall,
     pub set_watchdog_timer: SetWatchdogTimer,
 
-    pub connect_controller: *const (),
-    pub disconnect_controller: *const (),
+    pub connect_controller: *mut (),
+    pub disconnect_controller: *mut (),
 
     pub open_protocol: OpenProtocol,
     pub close_protocol: CloseProtocol,
@@ -205,14 +205,14 @@ pub struct BootServices {
     pub protocols_per_handle: ProtocolsPerHandle,
     pub locate_handle_buffer: LocateHandleBuffer,
     pub locate_protocol: LocateProtocol,
-    pub install_multiple_protocol_interfaces: *const (),
-    pub uninstall_multiple_protocol_interfaces: *const (),
+    pub install_multiple_protocol_interfaces: *mut (),
+    pub uninstall_multiple_protocol_interfaces: *mut (),
 
-    pub calculate_crc32: *const (),
+    pub calculate_crc32: *mut (),
 
-    pub copy_mem: *const (),
-    pub set_mem: *const (),
-    pub create_event_ex: *const (),
+    pub copy_mem: *mut (),
+    pub set_mem: *mut (),
+    pub create_event_ex: *mut (),
 }
 
 //
@@ -251,7 +251,7 @@ pub type Exit = unsafe extern "win64" fn(
     Handle,
     Status,
     usize,
-    *const u16,
+    *mut u16,
     ) -> Status;
 pub type ExitBootServices = unsafe extern "win64" fn(
     Handle,
@@ -264,46 +264,46 @@ pub type SetWatchdogTimer = unsafe extern "win64" fn(
     usize,
     u64,
     usize,
-    *const u16,
+    *mut u16,
     ) -> Status;
 
 pub type OpenProtocol = unsafe extern "win64" fn(
     Handle,
-    *const Guid,
-    *mut *const Void,
+    *mut Guid,
+    *mut *mut Void,
     Handle,
     Handle,
     OpenProtocolAttribute,
     ) -> Status;
 pub type CloseProtocol = unsafe extern "win64" fn(
     Handle,
-    *const Guid,
+    *mut Guid,
     Handle,
     Handle,
     ) -> Status;
 pub type OpenProtocolInformation = unsafe extern "win64" fn(
     Handle,
-    *const Guid,
-    *mut *const OpenProtocolInformationEntry,
+    *mut Guid,
+    *mut *mut OpenProtocolInformationEntry,
     *mut usize,
     ) -> Status;
 
 pub type ProtocolsPerHandle = unsafe extern "win64" fn(
     Handle,
-    *mut *const *const Guid,
+    *mut *mut *mut Guid,
     *mut usize,
     ) -> Status;
 pub type LocateHandleBuffer = unsafe extern "win64" fn(
     LocateSearchType,
-    *const Guid,
-    *const Void,
+    *mut Guid,
+    *mut Void,
     *mut usize,
-    *mut *const Handle,
+    *mut *mut Handle,
     ) -> Status;
 pub type LocateProtocol = unsafe extern "win64" fn(
-    *const Guid,
-    *const Void,
-    *mut *const Void,
+    *mut Guid,
+    *mut Void,
+    *mut *mut Void,
     ) -> Status;
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -425,17 +425,17 @@ pub struct RuntimeServices {
     pub set_virtual_address_map: SetVirtualAddressMap,
     pub convert_pointer: ConvertPointer,
 
-    pub get_variable: *const (),
-    pub get_next_variable_name: *const (),
-    pub set_variable: *const (),
+    pub get_variable: *mut (),
+    pub get_next_variable_name: *mut (),
+    pub set_variable: *mut (),
 
-    pub get_next_high_monotonic_count: *const (),
+    pub get_next_high_monotonic_count: *mut (),
     pub reset_system: ResetSystem,
 
-    pub update_capsule: *const (),
-    pub query_capsule_capabilities: *const (),
+    pub update_capsule: *mut (),
+    pub query_capsule_capabilities: *mut (),
 
-    pub query_variable_info: *const (),
+    pub query_variable_info: *mut (),
 }
 
 //
@@ -443,13 +443,13 @@ pub struct RuntimeServices {
 //
 
 pub type GetTime = unsafe extern "win64" fn(*mut Time, *mut TimeCapabilities) -> Status;
-pub type SetTime = unsafe extern "win64" fn(*const Time) -> Status;
+pub type SetTime = unsafe extern "win64" fn(*mut Time) -> Status;
 pub type GetWakeupTime = unsafe extern "win64" fn(
     *mut bool,
     *mut bool,
     *mut Time,
     ) -> Status;
-pub type SetWakeupTime = unsafe extern "win64" fn(bool, *const Time) -> Status;
+pub type SetWakeupTime = unsafe extern "win64" fn(bool, *mut Time) -> Status;
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
@@ -486,11 +486,11 @@ pub type SetVirtualAddressMap = unsafe extern "win64" fn(
     usize,
     usize,
     u32,
-    *const MemoryDescriptor,
+    *mut MemoryDescriptor,
     ) -> Status;
 pub type ConvertPointer = unsafe extern "win64" fn(
     DebugDisposition,
-    *mut *const Void,
+    *mut *mut Void,
     ) -> Status;
 
 bitflags! { pub flags DebugDisposition: usize {
@@ -501,7 +501,7 @@ pub type ResetSystem = unsafe extern "win64" fn(
     ResetType,
     Status,
     usize,
-    *const Void,
+    *mut Void,
     ) -> !;
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -521,5 +521,5 @@ pub enum ResetType {
 #[repr(C)]
 pub struct ConfigurationTable {
     pub vendor_guid: Guid,
-    pub vendor_table: *const Void,
+    pub vendor_table: *mut Void,
 }

@@ -10,23 +10,23 @@ pub struct GraphicsOutputProtocol {
     pub query_mode: QueryMode,
     pub set_mode: SetMode,
     pub blt: Blt,
-    pub mode: *const Mode,
+    pub mode: *mut Mode,
 }
 
 pub type QueryMode = unsafe extern "win64" fn(
-    *const GraphicsOutputProtocol,
+    *mut GraphicsOutputProtocol,
     u32,
     *mut usize,
-    *mut *const ModeInformation,
+    *mut *mut ModeInformation,
     ) -> Status;
 
 pub type SetMode = unsafe extern "win64" fn(
-    *const GraphicsOutputProtocol,
+    *mut GraphicsOutputProtocol,
     u32,
     ) -> Status;
 
 pub type Blt = unsafe extern "win64" fn(
-    *const GraphicsOutputProtocol,
+    *mut GraphicsOutputProtocol,
     *mut BltPixel,
     BltOperation,
     usize,
@@ -73,7 +73,7 @@ pub struct ModeInformation {
 pub struct Mode {
     pub max_mode: u32,
     pub mode: u32,
-    pub info: *const ModeInformation,
+    pub info: *mut ModeInformation,
     pub frame_buffer_base: PhysicalAddress,
     pub frame_buffer_size: usize,
 }
