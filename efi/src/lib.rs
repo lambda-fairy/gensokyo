@@ -144,11 +144,6 @@ impl BootServices {
     /// type `EfiLoaderData`.
     ///
     /// Panics if the allocation fails.
-    ///
-    /// # Safety
-    ///
-    /// The caller must ensure that the memory is freed (using `deallocate()`)
-    /// before exiting boot services.
     pub unsafe fn allocate(&self, size: usize) -> *mut u8 {
         let mut buffer = ptr::null_mut() as *mut u8;
         let status = ((*(*self.system_table).boot_services).allocate_pool)(
@@ -243,14 +238,15 @@ impl BootServices {
         }
     }
 
-    /// Invokes the given callback with a reference to a current live
-    /// `BootServices` object. Returns the result of the callback.
-    ///
-    /// If there is no current `BootServices` object, the callback is ignored
-    /// and `None` is returned instead.
+    /// Retrieves a copy of the boot services table, if present.
     ///
     /// This method is useful for writing panic handlers, since they don't have
     /// direct access to the system table.
+    ///
+    /// # Safety
+    ///
+    /// The caller must not use the instance after `.exit_boot_services()` is
+    /// called.
     ///
     /// # Examples
     ///
@@ -258,26 +254,22 @@ impl BootServices {
     /// #[lang = "panic_fmt"]
     /// fn panic_fmt(args: core::fmt::Arguments, file: &str, line: u32) -> ! {
     ///     // Log the panic to the console
-    ///     let _ = BootServices::with_instance(|bs| {
-    ///         write!(bs.stderr(), "PANIC: {} {} {}\r\n", args, file, line)
-    ///     });
+    ///     unsafe {
+    ///         if let Some(bs) = BootServices::get_instance() {
+    ///             let _ = write!(bs.stderr(), "PANIC: {} {} {}\r\n",
+    ///                            args, file, line);
+    ///         }
+    ///     }
     ///     loop {}
     /// }
     /// ```
-    pub fn with_instance<F, T>(callback: F) -> Option<T> where
-        F: FnOnce(&BootServices) -> T
-    {
-        if unsafe { STATE } != State::Boot {
+    pub unsafe fn get_instance() -> Option<BootServices> {
+        if STATE != State::Boot {
             return None;
         }
-        unsafe { INSTANCE }.map(|(image_handle, system_table)| {
-            let bs = BootServices {
-                image_handle: image_handle,
-                system_table: system_table,
-            };
-            let result = callback(&bs);
-            mem::forget(bs);
-            result
+        INSTANCE.map(|(image_handle, system_table)| BootServices {
+            image_handle: image_handle,
+            system_table: system_table,
         })
     }
 }
@@ -349,8 +341,12 @@ impl<T: ?Sized> DerefMut for EfiBox<T> {
 
 impl<T: ?Sized> Drop for EfiBox<T> {
     fn drop(&mut self) {
-        unsafe { ptr::drop_in_place(*self.ptr); }
-        BootServices::with_instance(|bs| unsafe { bs.deallocate(*self.ptr as *mut _) });
+        unsafe {
+            ptr::drop_in_place(*self.ptr);
+            if let Some(bs) = BootServices::get_instance() {
+                bs.deallocate(*self.ptr as *mut _);
+            }
+        }
     }
 }
 
@@ -444,7 +440,11 @@ impl MemoryMap {
 
 impl Drop for MemoryMap {
     fn drop(&mut self) {
-        BootServices::with_instance(|bs| unsafe { bs.deallocate(self.ptr as *mut _) });
+        unsafe {
+            if let Some(bs) = BootServices::get_instance() {
+                bs.deallocate(self.ptr as *mut _);
+            }
+        }
     }
 }
 
