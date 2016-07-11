@@ -1,5 +1,5 @@
 [root]
-name = "akira"
+name = "gensokyo"
 version = "0.1.0"
 dependencies = [
  "efi 0.1.0",

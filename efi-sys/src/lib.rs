@@ -4,8 +4,8 @@
 
 //! Low-level UEFI definitions.
 //!
-//! This crate provides the bare minimum to make Akira work, and so is in no way
-//! near complete.
+//! This crate provides the bare minimum to make Gensokyo work, and so is in no
+//! way near complete.
 //!
 //! Comments in the code refer to the UEFI Specification 2.6, available at
 //! <http://www.uefi.org/sites/default/files/resources/UEFI%20Spec%202_6.pdf>.
