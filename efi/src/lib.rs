@@ -120,13 +120,16 @@ pub struct BootServices {
 
 impl BootServices {
     /// Returns a handle to the console output.
-    pub fn stdout(&self) -> &SimpleTextOutput {
-        unsafe { mem::transmute((*self.system_table).con_out) }
+    pub fn stdout(&self) -> SimpleTextOutput {
+       SimpleTextOutput::from_raw(unsafe { &*(*self.system_table).con_out })
     }
 
     /// Returns a handle to the console standard error.
-    pub fn stderr(&self) -> &SimpleTextOutput {
-        unsafe { mem::transmute((*self.system_table).std_err) }
+    ///
+    /// Note that in most implementations, any text written to this handle will
+    /// not be displayed by default.
+    pub fn stderr(&self) -> SimpleTextOutput {
+       SimpleTextOutput::from_raw(unsafe { &*(*self.system_table).std_err })
     }
 
     /// Places an object on the UEFI heap.
@@ -169,14 +172,14 @@ impl BootServices {
     ///     .expect("could not find text output protocol");
     /// write!(output, "Hello, world!\r\n").unwrap();
     /// ```
-    pub fn locate_protocol<P: Protocol>(&self) -> Option<&P> {
+    pub fn locate_protocol<'e, P: Protocol<'e>>(&'e self) -> Option<P> {
         unsafe {
-            let mut interface = ptr::null_mut() as *mut P;
+            let mut interface = ptr::null_mut() as *mut P::Raw;
             let _status = ((*(*self.system_table).boot_services).locate_protocol)(
                     &P::GUID as *const _ as *mut _,
                     ptr::null_mut(),
                     &mut interface as *mut _ as *mut _);
-            interface.as_ref()
+            interface.as_ref().map(P::from_raw)
         }
     }
 
@@ -277,8 +280,20 @@ impl BootServices {
 
 pub use sys::Guid;
 
-pub trait Protocol {
+/// Represents a wrapper around a UEFI protocol.
+///
+/// To keep the use of these protocols safe, all wrappers are bounded by the
+/// lifetime of boot services `'e`. This bound makes sure that all protocols
+/// in use are closed before exiting boot services.
+pub trait Protocol<'e>: 'e {
+    /// The protocol's unique 128-bit identifier.
     const GUID: Guid;
+
+    /// The underlying protocol struct.
+    type Raw;
+
+    /// Creates an instance of this protocol from the underlying struct.
+    fn from_raw(p: &'e Self::Raw) -> Self;
 }
 
 mod graphics_output;
