@@ -27,6 +27,9 @@ use core::ptr::{self, Unique};
 use core::slice;
 
 
+pub use sys::PAGE_SIZE;
+
+
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Status {
     Known(sys::KnownStatus),
@@ -164,6 +167,9 @@ impl BootServices {
     }
 
     /// Returns the first protocol instance that matches the given protocol.
+    ///
+    /// FIXME: This shouldn't return a `&`-reference, but a smart pointer that
+    /// closes the protocol on drop.
     ///
     /// # Example
     ///

@@ -4,6 +4,7 @@ version = "0.1.0"
 dependencies = [
  "efi 0.1.0",
  "rlibc 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "spin 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -28,5 +29,10 @@ dependencies = [
 [[package]]
 name = "rlibc"
 version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "spin"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 

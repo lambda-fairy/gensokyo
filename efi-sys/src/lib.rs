@@ -30,6 +30,10 @@ pub enum Void { #[doc(hidden)] _Impossible }
 pub type Status = usize;
 pub type Handle = *mut Void;
 
+// UEFI treats pages as being 4 KiB in size, regardless of the underlying
+// implementation
+pub const PAGE_SIZE: usize = 4096;
+
 //
 // Appendix A: GUID and Time Formats, p2335
 //
@@ -348,6 +352,13 @@ pub struct MemoryDescriptor {
 }
 
 pub const MEMORY_DESCRIPTOR_VERSION: u32 = 1;
+
+impl MemoryDescriptor {
+    pub fn physical_end(&self) -> PhysicalAddress {
+        let start = self.physical_start.0;
+        PhysicalAddress(start + PAGE_SIZE as u64 * self.number_of_pages)
+    }
+}
 
 #[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PhysicalAddress(pub u64);
