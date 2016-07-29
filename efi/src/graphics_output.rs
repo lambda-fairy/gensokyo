@@ -6,17 +6,13 @@ use sys;
 
 pub use sys::{BltPixel, ModeInformation, PixelBitmask, PixelFormat};
 
-pub struct GraphicsOutput<'e>(&'e sys::GraphicsOutputProtocol);
+pub struct GraphicsOutput(sys::GraphicsOutputProtocol);
 
-impl<'e> Protocol<'e> for GraphicsOutput<'e> {
+impl Protocol for GraphicsOutput {
     const GUID: Guid = sys::GRAPHICS_OUTPUT_PROTOCOL_GUID;
-    type Raw = sys::GraphicsOutputProtocol;
-    fn from_raw(p: &'e Self::Raw) -> Self {
-        GraphicsOutput(p)
-    }
 }
 
-impl<'e> GraphicsOutput<'e> {
+impl GraphicsOutput {
     /// Returns the physical address and size of the linear frame buffer.
     pub fn linear_frame_buffer(&self) -> (PhysicalAddress, usize) {
         let mode = self.0.mode;
@@ -45,7 +41,7 @@ impl<'e> GraphicsOutput<'e> {
             let mut size_of_info: usize = 0;
             let mut info = ptr::null_mut() as *mut ModeInformation;
             let status = (self.0.query_mode)(
-                self.0 as *const _ as *mut _,
+                &self.0 as *const _ as *mut _,
                 mode,
                 &mut size_of_info as *mut _,
                 &mut info as *mut _);
@@ -58,7 +54,7 @@ impl<'e> GraphicsOutput<'e> {
     pub fn set_mode(&self, mode: ModeNumber) -> EfiResult<()> {
         let status = unsafe {
             (self.0.set_mode)(
-                self.0 as *const _ as *mut _,
+                &self.0 as *const _ as *mut _,
                 mode)
         };
         check_status(status)
@@ -73,7 +69,7 @@ impl<'e> GraphicsOutput<'e> {
     {
         let status = unsafe {
             (self.0.blt)(
-                self.0 as *const _ as *mut _,
+                &self.0 as *const _ as *mut _,
                 &pixel as *const _ as *mut _,
                 sys::BltOperation::VideoFill,
                 0, 0,
@@ -100,7 +96,7 @@ impl<'e> GraphicsOutput<'e> {
         let delta = row_len * mem::size_of::<BltPixel>();
         let status = unsafe {
             (self.0.blt)(
-                self.0 as *const _ as *mut _,
+                &self.0 as *const _ as *mut _,
                 buffer.as_ptr() as *mut _,
                 sys::BltOperation::BufferToVideo,
                 sx, sy,

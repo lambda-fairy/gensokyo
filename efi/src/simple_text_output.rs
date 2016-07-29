@@ -6,17 +6,13 @@ use sys;
 
 
 /// Provides a simple interface for displaying text.
-pub struct SimpleTextOutput<'e>(&'e sys::SimpleTextOutputProtocol);
+pub struct SimpleTextOutput(sys::SimpleTextOutputProtocol);
 
-impl<'e> Protocol<'e> for SimpleTextOutput<'e> {
+impl Protocol for SimpleTextOutput {
     const GUID: Guid = sys::SIMPLE_TEXT_OUTPUT_GUID;
-    type Raw = sys::SimpleTextOutputProtocol;
-    fn from_raw(p: &'e Self::Raw) -> Self {
-        SimpleTextOutput(p)
-    }
 }
 
-impl<'e> SimpleTextOutput<'e> {
+impl SimpleTextOutput {
     /// Write a string to the handle.
     pub fn write_str(&self, s: &str) -> EfiResult<()> {
         let mut buffer = [0u16; 128];
@@ -28,7 +24,7 @@ impl<'e> SimpleTextOutput<'e> {
             }
             let status = unsafe {
                 (self.0.output_string)(
-                    self.0 as *const _ as *mut _,
+                    &self.0 as *const _ as *mut _,
                     buffer.as_ptr() as *mut _)
             };
             check_status(status)?;
@@ -48,7 +44,7 @@ impl<'e> SimpleTextOutput<'e> {
     /// ```
     pub fn write_fmt(&self, args: fmt::Arguments) -> EfiResult<()> {
         struct Writer<'e> {
-            inner: &'e SimpleTextOutput<'e>,
+            inner: &'e SimpleTextOutput,
             result: EfiResult<()>,
         }
         impl<'e> fmt::Write for Writer<'e> {
