@@ -341,7 +341,7 @@ pub enum MemoryType {
 }
 
 /// Represents a UEFI memory descriptor.
-#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct MemoryDescriptor {
     pub type_: MemoryType,  // = UINT32
@@ -351,32 +351,29 @@ pub struct MemoryDescriptor {
     pub attribute: MemoryAttribute,
 }
 
+impl fmt::Debug for MemoryDescriptor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("MemoryDescriptor")
+            .field("type_", &self.type_)
+            .field("physical_start", &format_args!("{:#016x}", self.physical_start))
+            .field("virtual_start", &format_args!("{:#016x}", self.virtual_start))
+            .field("number_of_pages", &self.number_of_pages)
+            .field("attribute", &self.attribute)
+            .finish()
+    }
+}
+
 pub const MEMORY_DESCRIPTOR_VERSION: u32 = 1;
 
 impl MemoryDescriptor {
     pub fn physical_end(&self) -> PhysicalAddress {
-        let start = self.physical_start.0;
-        PhysicalAddress(start + PAGE_SIZE as u64 * self.number_of_pages)
+        self.physical_start + PAGE_SIZE as u64 * self.number_of_pages
     }
 }
 
-#[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct PhysicalAddress(pub u64);
+pub type PhysicalAddress = u64;
 
-impl fmt::Debug for PhysicalAddress {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "0x{:016x}", self.0)
-    }
-}
-
-#[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct VirtualAddress(pub u64);
-
-impl fmt::Debug for VirtualAddress {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "0x{:016x}", self.0)
-    }
-}
+pub type VirtualAddress = u64;
 
 bitflags! { pub flags MemoryAttribute: u64 {
     const MEMORY_UC = 0x0000000000000001,

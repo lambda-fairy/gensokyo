@@ -79,7 +79,7 @@ fn initialize(bs: &BootServices) -> (MapKey, *mut u8) {
     for desc in &memory_map {
         if !is_usable_memory_type(desc.type_) {
             PHYSICAL_ALLOC.try().unwrap().write().mark_as_used(
-                desc.physical_start.0 as usize,
+                desc.physical_start as usize,
                 efi::PAGE_SIZE * desc.number_of_pages as usize);
         }
     }
@@ -96,7 +96,7 @@ fn initialize(bs: &BootServices) -> (MapKey, *mut u8) {
 
 fn calculate_physical_memory_size(memory_map: &MemoryMap) -> usize {
     let physical_end = memory_map.iter().map(|desc| desc.physical_end()).max().unwrap();
-    physical_end.0 as usize
+    physical_end as usize
 }
 
 fn is_usable_memory_type(type_: MemoryType) -> bool {
