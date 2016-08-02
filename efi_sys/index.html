@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `efi_sys` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, efi_sys">
+
+    <title>efi_sys - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'efi_sys', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>efi_sys</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/efi_sys/efi-sys/src/lib.rs.html#1-533' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Low-level UEFI definitions.</p>
+
+<p>This crate provides the bare minimum to make Gensokyo work, and so is in no
+way near complete.</p>
+
+<p>Comments in the code refer to the UEFI Specification 2.6, available at
+<a href="http://www.uefi.org/sites/default/files/resources/UEFI%20Spec%202_6.pdf">http://www.uefi.org/sites/default/files/resources/UEFI%20Spec%202_6.pdf</a>.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='graphics_output/index.html'
+                                  title='efi_sys::graphics_output'>graphics_output</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='simple_text_input/index.html'
+                                  title='efi_sys::simple_text_input'>simple_text_input</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='simple_text_output/index.html'
+                                  title='efi_sys::simple_text_output'>simple_text_output</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.BltPixel.html'
+                                  title='efi_sys::BltPixel'>BltPixel</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.BootServices.html'
+                                  title='efi_sys::BootServices'>BootServices</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ConfigurationTable.html'
+                                  title='efi_sys::ConfigurationTable'>ConfigurationTable</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Daylight.html'
+                                  title='efi_sys::Daylight'>Daylight</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.DebugDisposition.html'
+                                  title='efi_sys::DebugDisposition'>DebugDisposition</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.GraphicsOutputProtocol.html'
+                                  title='efi_sys::GraphicsOutputProtocol'>GraphicsOutputProtocol</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Guid.html'
+                                  title='efi_sys::Guid'>Guid</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MemoryAttribute.html'
+                                  title='efi_sys::MemoryAttribute'>MemoryAttribute</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MemoryDescriptor.html'
+                                  title='efi_sys::MemoryDescriptor'>MemoryDescriptor</a></td>
+                           <td class='docblock short'>
+                                <p>Represents a UEFI memory descriptor.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Mode.html'
+                                  title='efi_sys::Mode'>Mode</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ModeInformation.html'
+                                  title='efi_sys::ModeInformation'>ModeInformation</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OpenProtocolAttribute.html'
+                                  title='efi_sys::OpenProtocolAttribute'>OpenProtocolAttribute</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OpenProtocolInformationEntry.html'
+                                  title='efi_sys::OpenProtocolInformationEntry'>OpenProtocolInformationEntry</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PixelBitmask.html'
+                                  title='efi_sys::PixelBitmask'>PixelBitmask</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.RuntimeServices.html'
+                                  title='efi_sys::RuntimeServices'>RuntimeServices</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.SimpleTextInputProtocol.html'
+                                  title='efi_sys::SimpleTextInputProtocol'>SimpleTextInputProtocol</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.SimpleTextOutputProtocol.html'
+                                  title='efi_sys::SimpleTextOutputProtocol'>SimpleTextOutputProtocol</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.SystemTable.html'
+                                  title='efi_sys::SystemTable'>SystemTable</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.TableHeader.html'
+                                  title='efi_sys::TableHeader'>TableHeader</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Time.html'
+                                  title='efi_sys::Time'>Time</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.TimeCapabilities.html'
+                                  title='efi_sys::TimeCapabilities'>TimeCapabilities</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.AllocateType.html'
+                                  title='efi_sys::AllocateType'>AllocateType</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.BltOperation.html'
+                                  title='efi_sys::BltOperation'>BltOperation</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.KnownStatus.html'
+                                  title='efi_sys::KnownStatus'>KnownStatus</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.LocateSearchType.html'
+                                  title='efi_sys::LocateSearchType'>LocateSearchType</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.MemoryType.html'
+                                  title='efi_sys::MemoryType'>MemoryType</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.PixelFormat.html'
+                                  title='efi_sys::PixelFormat'>PixelFormat</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.ResetType.html'
+                                  title='efi_sys::ResetType'>ResetType</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.Void.html'
+                                  title='efi_sys::Void'>Void</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.ADJUST_DAYLIGHT.html'
+                                  title='efi_sys::ADJUST_DAYLIGHT'>ADJUST_DAYLIGHT</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.BY_CHILD_CONTROLLER.html'
+                                  title='efi_sys::BY_CHILD_CONTROLLER'>BY_CHILD_CONTROLLER</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.BY_DRIVER.html'
+                                  title='efi_sys::BY_DRIVER'>BY_DRIVER</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.BY_HANDLE_PROTOCOL.html'
+                                  title='efi_sys::BY_HANDLE_PROTOCOL'>BY_HANDLE_PROTOCOL</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EXCLUSIVE.html'
+                                  title='efi_sys::EXCLUSIVE'>EXCLUSIVE</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.GET_PROTOCOL.html'
+                                  title='efi_sys::GET_PROTOCOL'>GET_PROTOCOL</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.GRAPHICS_OUTPUT_PROTOCOL_GUID.html'
+                                  title='efi_sys::GRAPHICS_OUTPUT_PROTOCOL_GUID'>GRAPHICS_OUTPUT_PROTOCOL_GUID</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.IN_DAYLIGHT.html'
+                                  title='efi_sys::IN_DAYLIGHT'>IN_DAYLIGHT</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MAX_BIT.html'
+                                  title='efi_sys::MAX_BIT'>MAX_BIT</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_DESCRIPTOR_VERSION.html'
+                                  title='efi_sys::MEMORY_DESCRIPTOR_VERSION'>MEMORY_DESCRIPTOR_VERSION</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_MORE_RELIABLE.html'
+                                  title='efi_sys::MEMORY_MORE_RELIABLE'>MEMORY_MORE_RELIABLE</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_NV.html'
+                                  title='efi_sys::MEMORY_NV'>MEMORY_NV</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_RO.html'
+                                  title='efi_sys::MEMORY_RO'>MEMORY_RO</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_RP.html'
+                                  title='efi_sys::MEMORY_RP'>MEMORY_RP</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_RUNTIME.html'
+                                  title='efi_sys::MEMORY_RUNTIME'>MEMORY_RUNTIME</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_UC.html'
+                                  title='efi_sys::MEMORY_UC'>MEMORY_UC</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_UCE.html'
+                                  title='efi_sys::MEMORY_UCE'>MEMORY_UCE</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_WB.html'
+                                  title='efi_sys::MEMORY_WB'>MEMORY_WB</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_WC.html'
+                                  title='efi_sys::MEMORY_WC'>MEMORY_WC</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_WP.html'
+                                  title='efi_sys::MEMORY_WP'>MEMORY_WP</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_WT.html'
+                                  title='efi_sys::MEMORY_WT'>MEMORY_WT</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.MEMORY_XP.html'
+                                  title='efi_sys::MEMORY_XP'>MEMORY_XP</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.OPTIONAL_PTR.html'
+                                  title='efi_sys::OPTIONAL_PTR'>OPTIONAL_PTR</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.PAGE_SIZE.html'
+                                  title='efi_sys::PAGE_SIZE'>PAGE_SIZE</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.SIMPLE_TEXT_OUTPUT_GUID.html'
+                                  title='efi_sys::SIMPLE_TEXT_OUTPUT_GUID'>SIMPLE_TEXT_OUTPUT_GUID</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.TEST_PROTOCOL.html'
+                                  title='efi_sys::TEST_PROTOCOL'>TEST_PROTOCOL</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.UNSPECIFIED_TIMEZONE.html'
+                                  title='efi_sys::UNSPECIFIED_TIMEZONE'>UNSPECIFIED_TIMEZONE</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.AllocatePages.html'
+                                  title='efi_sys::AllocatePages'>AllocatePages</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.AllocatePool.html'
+                                  title='efi_sys::AllocatePool'>AllocatePool</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blt.html'
+                                  title='efi_sys::Blt'>Blt</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.CloseProtocol.html'
+                                  title='efi_sys::CloseProtocol'>CloseProtocol</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.ConvertPointer.html'
+                                  title='efi_sys::ConvertPointer'>ConvertPointer</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Exit.html'
+                                  title='efi_sys::Exit'>Exit</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.ExitBootServices.html'
+                                  title='efi_sys::ExitBootServices'>ExitBootServices</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.FreePages.html'
+                                  title='efi_sys::FreePages'>FreePages</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.FreePool.html'
+                                  title='efi_sys::FreePool'>FreePool</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.GetMemoryMap.html'
+                                  title='efi_sys::GetMemoryMap'>GetMemoryMap</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.GetNextMonotonicCount.html'
+                                  title='efi_sys::GetNextMonotonicCount'>GetNextMonotonicCount</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.GetTime.html'
+                                  title='efi_sys::GetTime'>GetTime</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.GetWakeupTime.html'
+                                  title='efi_sys::GetWakeupTime'>GetWakeupTime</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Handle.html'
+                                  title='efi_sys::Handle'>Handle</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.LocateHandleBuffer.html'
+                                  title='efi_sys::LocateHandleBuffer'>LocateHandleBuffer</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.LocateProtocol.html'
+                                  title='efi_sys::LocateProtocol'>LocateProtocol</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.OpenProtocol.html'
+                                  title='efi_sys::OpenProtocol'>OpenProtocol</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.OpenProtocolInformation.html'
+                                  title='efi_sys::OpenProtocolInformation'>OpenProtocolInformation</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.PhysicalAddress.html'
+                                  title='efi_sys::PhysicalAddress'>PhysicalAddress</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.ProtocolsPerHandle.html'
+                                  title='efi_sys::ProtocolsPerHandle'>ProtocolsPerHandle</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.QueryMode.html'
+                                  title='efi_sys::QueryMode'>QueryMode</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.RaiseTpl.html'
+                                  title='efi_sys::RaiseTpl'>RaiseTpl</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.ResetSystem.html'
+                                  title='efi_sys::ResetSystem'>ResetSystem</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.RestoreTpl.html'
+                                  title='efi_sys::RestoreTpl'>RestoreTpl</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.SetMode.html'
+                                  title='efi_sys::SetMode'>SetMode</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.SetTime.html'
+                                  title='efi_sys::SetTime'>SetTime</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.SetVirtualAddressMap.html'
+                                  title='efi_sys::SetVirtualAddressMap'>SetVirtualAddressMap</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.SetWakeupTime.html'
+                                  title='efi_sys::SetWakeupTime'>SetWakeupTime</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.SetWatchdogTimer.html'
+                                  title='efi_sys::SetWatchdogTimer'>SetWatchdogTimer</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Stall.html'
+                                  title='efi_sys::Stall'>Stall</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Status.html'
+                                  title='efi_sys::Status'>Status</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.TextReset.html'
+                                  title='efi_sys::TextReset'>TextReset</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.TextString.html'
+                                  title='efi_sys::TextString'>TextString</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Tpl.html'
+                                  title='efi_sys::Tpl'>Tpl</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.VirtualAddress.html'
+                                  title='efi_sys::VirtualAddress'>VirtualAddress</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "efi_sys";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

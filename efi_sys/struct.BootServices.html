@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `BootServices` struct in crate `efi_sys`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, BootServices">
+
+    <title>efi_sys::BootServices - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>efi_sys</a></p><script>window.sidebarCurrent = {name: 'BootServices', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>efi_sys</a>::<wbr><a class='struct' href=''>BootServices</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-1036' class='srclink' href='../src/efi_sys/efi-sys/src/lib.rs.html#163-220' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct BootServices {
+    pub hdr: <a class='struct' href='../efi_sys/struct.TableHeader.html' title='efi_sys::TableHeader'>TableHeader</a>,
+    pub raise_tpl: <a class='type' href='../efi_sys/type.RaiseTpl.html' title='efi_sys::RaiseTpl'>RaiseTpl</a>,
+    pub restore_tpl: <a class='type' href='../efi_sys/type.RestoreTpl.html' title='efi_sys::RestoreTpl'>RestoreTpl</a>,
+    pub allocate_pages: <a class='type' href='../efi_sys/type.AllocatePages.html' title='efi_sys::AllocatePages'>AllocatePages</a>,
+    pub free_pages: <a class='type' href='../efi_sys/type.FreePages.html' title='efi_sys::FreePages'>FreePages</a>,
+    pub get_memory_map: <a class='type' href='../efi_sys/type.GetMemoryMap.html' title='efi_sys::GetMemoryMap'>GetMemoryMap</a>,
+    pub allocate_pool: <a class='type' href='../efi_sys/type.AllocatePool.html' title='efi_sys::AllocatePool'>AllocatePool</a>,
+    pub free_pool: <a class='type' href='../efi_sys/type.FreePool.html' title='efi_sys::FreePool'>FreePool</a>,
+    pub create_event: *mut (),
+    pub set_timer: *mut (),
+    pub wait_for_event: *mut (),
+    pub signal_event: *mut (),
+    pub close_event: *mut (),
+    pub check_event: *mut (),
+    pub install_protocol_interface: *mut (),
+    pub reinstall_protocol_interface: *mut (),
+    pub uninstall_protocol_interface: *mut (),
+    pub handle_protocol: *mut (),
+    pub reserved: *mut <a class='enum' href='../efi_sys/enum.Void.html' title='efi_sys::Void'>Void</a>,
+    pub register_protocol_notify: *mut (),
+    pub locate_handle: *mut (),
+    pub locate_device_path: *mut (),
+    pub install_configuration_table: *mut (),
+    pub load_image: *mut (),
+    pub start_image: *mut (),
+    pub exit: <a class='type' href='../efi_sys/type.Exit.html' title='efi_sys::Exit'>Exit</a>,
+    pub unload_image: *mut (),
+    pub exit_boot_services: <a class='type' href='../efi_sys/type.ExitBootServices.html' title='efi_sys::ExitBootServices'>ExitBootServices</a>,
+    pub get_next_monotonic_count: <a class='type' href='../efi_sys/type.GetNextMonotonicCount.html' title='efi_sys::GetNextMonotonicCount'>GetNextMonotonicCount</a>,
+    pub stall: <a class='type' href='../efi_sys/type.Stall.html' title='efi_sys::Stall'>Stall</a>,
+    pub set_watchdog_timer: <a class='type' href='../efi_sys/type.SetWatchdogTimer.html' title='efi_sys::SetWatchdogTimer'>SetWatchdogTimer</a>,
+    pub connect_controller: *mut (),
+    pub disconnect_controller: *mut (),
+    pub open_protocol: <a class='type' href='../efi_sys/type.OpenProtocol.html' title='efi_sys::OpenProtocol'>OpenProtocol</a>,
+    pub close_protocol: <a class='type' href='../efi_sys/type.CloseProtocol.html' title='efi_sys::CloseProtocol'>CloseProtocol</a>,
+    pub open_protocol_information: <a class='type' href='../efi_sys/type.OpenProtocolInformation.html' title='efi_sys::OpenProtocolInformation'>OpenProtocolInformation</a>,
+    pub protocols_per_handle: <a class='type' href='../efi_sys/type.ProtocolsPerHandle.html' title='efi_sys::ProtocolsPerHandle'>ProtocolsPerHandle</a>,
+    pub locate_handle_buffer: <a class='type' href='../efi_sys/type.LocateHandleBuffer.html' title='efi_sys::LocateHandleBuffer'>LocateHandleBuffer</a>,
+    pub locate_protocol: <a class='type' href='../efi_sys/type.LocateProtocol.html' title='efi_sys::LocateProtocol'>LocateProtocol</a>,
+    pub install_multiple_protocol_interfaces: *mut (),
+    pub uninstall_multiple_protocol_interfaces: *mut (),
+    pub calculate_crc32: *mut (),
+    pub copy_mem: *mut (),
+    pub set_mem: *mut (),
+    pub create_event_ex: *mut (),
+}</pre><h2 class='fields'>Fields</h2><span id='structfield.hdr' class='structfield'><code>hdr: <a class='struct' href='../efi_sys/struct.TableHeader.html' title='efi_sys::TableHeader'>TableHeader</a></code>
+                           </span><span class='stab '></span><span id='structfield.raise_tpl' class='structfield'><code>raise_tpl: <a class='type' href='../efi_sys/type.RaiseTpl.html' title='efi_sys::RaiseTpl'>RaiseTpl</a></code>
+                           </span><span class='stab '></span><span id='structfield.restore_tpl' class='structfield'><code>restore_tpl: <a class='type' href='../efi_sys/type.RestoreTpl.html' title='efi_sys::RestoreTpl'>RestoreTpl</a></code>
+                           </span><span class='stab '></span><span id='structfield.allocate_pages' class='structfield'><code>allocate_pages: <a class='type' href='../efi_sys/type.AllocatePages.html' title='efi_sys::AllocatePages'>AllocatePages</a></code>
+                           </span><span class='stab '></span><span id='structfield.free_pages' class='structfield'><code>free_pages: <a class='type' href='../efi_sys/type.FreePages.html' title='efi_sys::FreePages'>FreePages</a></code>
+                           </span><span class='stab '></span><span id='structfield.get_memory_map' class='structfield'><code>get_memory_map: <a class='type' href='../efi_sys/type.GetMemoryMap.html' title='efi_sys::GetMemoryMap'>GetMemoryMap</a></code>
+                           </span><span class='stab '></span><span id='structfield.allocate_pool' class='structfield'><code>allocate_pool: <a class='type' href='../efi_sys/type.AllocatePool.html' title='efi_sys::AllocatePool'>AllocatePool</a></code>
+                           </span><span class='stab '></span><span id='structfield.free_pool' class='structfield'><code>free_pool: <a class='type' href='../efi_sys/type.FreePool.html' title='efi_sys::FreePool'>FreePool</a></code>
+                           </span><span class='stab '></span><span id='structfield.create_event' class='structfield'><code>create_event: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.set_timer' class='structfield'><code>set_timer: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.wait_for_event' class='structfield'><code>wait_for_event: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.signal_event' class='structfield'><code>signal_event: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.close_event' class='structfield'><code>close_event: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.check_event' class='structfield'><code>check_event: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.install_protocol_interface' class='structfield'><code>install_protocol_interface: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.reinstall_protocol_interface' class='structfield'><code>reinstall_protocol_interface: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.uninstall_protocol_interface' class='structfield'><code>uninstall_protocol_interface: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.handle_protocol' class='structfield'><code>handle_protocol: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.reserved' class='structfield'><code>reserved: *mut <a class='enum' href='../efi_sys/enum.Void.html' title='efi_sys::Void'>Void</a></code>
+                           </span><span class='stab '></span><span id='structfield.register_protocol_notify' class='structfield'><code>register_protocol_notify: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.locate_handle' class='structfield'><code>locate_handle: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.locate_device_path' class='structfield'><code>locate_device_path: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.install_configuration_table' class='structfield'><code>install_configuration_table: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.load_image' class='structfield'><code>load_image: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.start_image' class='structfield'><code>start_image: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.exit' class='structfield'><code>exit: <a class='type' href='../efi_sys/type.Exit.html' title='efi_sys::Exit'>Exit</a></code>
+                           </span><span class='stab '></span><span id='structfield.unload_image' class='structfield'><code>unload_image: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.exit_boot_services' class='structfield'><code>exit_boot_services: <a class='type' href='../efi_sys/type.ExitBootServices.html' title='efi_sys::ExitBootServices'>ExitBootServices</a></code>
+                           </span><span class='stab '></span><span id='structfield.get_next_monotonic_count' class='structfield'><code>get_next_monotonic_count: <a class='type' href='../efi_sys/type.GetNextMonotonicCount.html' title='efi_sys::GetNextMonotonicCount'>GetNextMonotonicCount</a></code>
+                           </span><span class='stab '></span><span id='structfield.stall' class='structfield'><code>stall: <a class='type' href='../efi_sys/type.Stall.html' title='efi_sys::Stall'>Stall</a></code>
+                           </span><span class='stab '></span><span id='structfield.set_watchdog_timer' class='structfield'><code>set_watchdog_timer: <a class='type' href='../efi_sys/type.SetWatchdogTimer.html' title='efi_sys::SetWatchdogTimer'>SetWatchdogTimer</a></code>
+                           </span><span class='stab '></span><span id='structfield.connect_controller' class='structfield'><code>connect_controller: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.disconnect_controller' class='structfield'><code>disconnect_controller: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.open_protocol' class='structfield'><code>open_protocol: <a class='type' href='../efi_sys/type.OpenProtocol.html' title='efi_sys::OpenProtocol'>OpenProtocol</a></code>
+                           </span><span class='stab '></span><span id='structfield.close_protocol' class='structfield'><code>close_protocol: <a class='type' href='../efi_sys/type.CloseProtocol.html' title='efi_sys::CloseProtocol'>CloseProtocol</a></code>
+                           </span><span class='stab '></span><span id='structfield.open_protocol_information' class='structfield'><code>open_protocol_information: <a class='type' href='../efi_sys/type.OpenProtocolInformation.html' title='efi_sys::OpenProtocolInformation'>OpenProtocolInformation</a></code>
+                           </span><span class='stab '></span><span id='structfield.protocols_per_handle' class='structfield'><code>protocols_per_handle: <a class='type' href='../efi_sys/type.ProtocolsPerHandle.html' title='efi_sys::ProtocolsPerHandle'>ProtocolsPerHandle</a></code>
+                           </span><span class='stab '></span><span id='structfield.locate_handle_buffer' class='structfield'><code>locate_handle_buffer: <a class='type' href='../efi_sys/type.LocateHandleBuffer.html' title='efi_sys::LocateHandleBuffer'>LocateHandleBuffer</a></code>
+                           </span><span class='stab '></span><span id='structfield.locate_protocol' class='structfield'><code>locate_protocol: <a class='type' href='../efi_sys/type.LocateProtocol.html' title='efi_sys::LocateProtocol'>LocateProtocol</a></code>
+                           </span><span class='stab '></span><span id='structfield.install_multiple_protocol_interfaces' class='structfield'><code>install_multiple_protocol_interfaces: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.uninstall_multiple_protocol_interfaces' class='structfield'><code>uninstall_multiple_protocol_interfaces: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.calculate_crc32' class='structfield'><code>calculate_crc32: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.copy_mem' class='structfield'><code>copy_mem: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.set_mem' class='structfield'><code>set_mem: *mut ()</code>
+                           </span><span class='stab '></span><span id='structfield.create_event_ex' class='structfield'><code>create_event_ex: *mut ()</code>
+                           </span><span class='stab '></span></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "efi_sys";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

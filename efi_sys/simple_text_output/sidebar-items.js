@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["SIMPLE_TEXT_OUTPUT_GUID",""]],"struct":[["SimpleTextOutputProtocol",""]],"type":[["TextReset",""],["TextString",""]]});

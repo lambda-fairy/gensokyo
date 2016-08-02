@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `SimpleTextOutput` struct in crate `efi`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, SimpleTextOutput">
+
+    <title>efi::SimpleTextOutput - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>efi</a></p><script>window.sidebarCurrent = {name: 'SimpleTextOutput', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>efi</a>::<wbr><a class='struct' href=''>SimpleTextOutput</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-262' class='srclink' href='../src/efi/efi/src/simple_text_output.rs.html#9' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct SimpleTextOutput(_);</pre><div class='docblock'><p>Provides a simple interface for displaying text.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../efi/struct.SimpleTextOutput.html' title='efi::SimpleTextOutput'>SimpleTextOutput</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-268' class='srclink' href='../src/efi/efi/src/simple_text_output.rs.html#15-60' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.write_str' class='method'><code>fn <a href='#method.write_str' class='fnname'>write_str</a>(&amp;self, s: &amp;str) -&gt; <a class='type' href='../efi/type.EfiResult.html' title='efi::EfiResult'>EfiResult</a>&lt;()&gt;</code></h4>
+<div class='docblock'><p>Write a string to the handle.</p>
+</div><h4 id='method.write_fmt' class='method'><code>fn <a href='#method.write_fmt' class='fnname'>write_fmt</a>(&amp;self, args: <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Arguments.html' title='core::fmt::Arguments'>Arguments</a>) -&gt; <a class='type' href='../efi/type.EfiResult.html' title='efi::EfiResult'>EfiResult</a>&lt;()&gt;</code></h4>
+<div class='docblock'><p>Write a formatting object to the handle.</p>
+
+<p>This method lets you use the <code>write!</code> macro to output formatted text.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>out</span> <span class='op'>=</span> <span class='ident'>bs</span>.<span class='ident'>stdout</span>();
+<span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>out</span>, <span class='string'>&quot;Hello, world!\r\n&quot;</span>).<span class='ident'>unwrap</span>();</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../efi/trait.Protocol.html' title='efi::Protocol'>Protocol</a> for <a class='struct' href='../efi/struct.SimpleTextOutput.html' title='efi::SimpleTextOutput'>SimpleTextOutput</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-265' class='srclink' href='../src/efi/efi/src/simple_text_output.rs.html#11-13' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedconstant.GUID' class='associatedconstant'><code>const <a href='../efi/trait.Protocol.html#associatedconstant.GUID' class='constant'>GUID</a>: <a class='struct' href='../efi/struct.Guid.html' title='efi::Guid'>Guid</a> = sys::SIMPLE_TEXT_OUTPUT_GUID</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "efi";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

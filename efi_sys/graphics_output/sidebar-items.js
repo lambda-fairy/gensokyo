@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["GRAPHICS_OUTPUT_PROTOCOL_GUID",""]],"enum":[["BltOperation",""],["PixelFormat",""]],"struct":[["BltPixel",""],["GraphicsOutputProtocol",""],["Mode",""],["ModeInformation",""],["PixelBitmask",""]],"type":[["Blt",""],["QueryMode",""],["SetMode",""]]});

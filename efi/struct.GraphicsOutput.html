@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `GraphicsOutput` struct in crate `efi`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, GraphicsOutput">
+
+    <title>efi::GraphicsOutput - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>efi</a></p><script>window.sidebarCurrent = {name: 'GraphicsOutput', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>efi</a>::<wbr><a class='struct' href=''>GraphicsOutput</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-207' class='srclink' href='../src/efi/efi/src/graphics_output.rs.html#9' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct GraphicsOutput(_);</pre><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../efi/struct.GraphicsOutput.html' title='efi::GraphicsOutput'>GraphicsOutput</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-213' class='srclink' href='../src/efi/efi/src/graphics_output.rs.html#15-109' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.linear_frame_buffer' class='method'><code>fn <a href='#method.linear_frame_buffer' class='fnname'>linear_frame_buffer</a>(&amp;self) -&gt; (<a class='type' href='../efi/type.PhysicalAddress.html' title='efi::PhysicalAddress'>PhysicalAddress</a>, usize)</code></h4>
+<div class='docblock'><p>Returns the physical address and size of the linear frame buffer.</p>
+</div><h4 id='method.current_mode' class='method'><code>fn <a href='#method.current_mode' class='fnname'>current_mode</a>(&amp;self) -&gt; <a class='type' href='../efi/type.ModeNumber.html' title='efi::ModeNumber'>ModeNumber</a></code></h4>
+<div class='docblock'><p>Returns the index of the current mode.</p>
+</div><h4 id='method.current_mode_info' class='method'><code>fn <a href='#method.current_mode_info' class='fnname'>current_mode_info</a>(&amp;self) -&gt; &amp;<a class='struct' href='../efi/struct.ModeInformation.html' title='efi::ModeInformation'>ModeInformation</a></code></h4>
+<div class='docblock'><p>Returns information pertaining to the current mode.</p>
+</div><h4 id='method.max_mode' class='method'><code>fn <a href='#method.max_mode' class='fnname'>max_mode</a>(&amp;self) -&gt; <a class='type' href='../efi/type.ModeNumber.html' title='efi::ModeNumber'>ModeNumber</a></code></h4>
+<div class='docblock'><p>Returns the number of modes supported by this device. All mode numbers
+are in the range <code>[0, max_mode)</code>.</p>
+</div><h4 id='method.query_mode' class='method'><code>fn <a href='#method.query_mode' class='fnname'>query_mode</a>(&amp;self, mode: <a class='type' href='../efi/type.ModeNumber.html' title='efi::ModeNumber'>ModeNumber</a>) -&gt; <a class='type' href='../efi/type.EfiResult.html' title='efi::EfiResult'>EfiResult</a>&lt;<a class='struct' href='../efi/struct.EfiBox.html' title='efi::EfiBox'>EfiBox</a>&lt;<a class='struct' href='../efi/struct.ModeInformation.html' title='efi::ModeInformation'>ModeInformation</a>&gt;&gt;</code></h4>
+<div class='docblock'><p>Queries information on the specified mode.</p>
+</div><h4 id='method.set_mode' class='method'><code>fn <a href='#method.set_mode' class='fnname'>set_mode</a>(&amp;self, mode: <a class='type' href='../efi/type.ModeNumber.html' title='efi::ModeNumber'>ModeNumber</a>) -&gt; <a class='type' href='../efi/type.EfiResult.html' title='efi::EfiResult'>EfiResult</a>&lt;()&gt;</code></h4>
+<div class='docblock'><p>Sets the mode of this device.</p>
+</div><h4 id='method.fill' class='method'><code>fn <a href='#method.fill' class='fnname'>fill</a>(&amp;self, x: usize, y: usize, w: usize, h: usize, pixel: <a class='struct' href='../efi/struct.BltPixel.html' title='efi::BltPixel'>BltPixel</a>) -&gt; <a class='type' href='../efi/type.EfiResult.html' title='efi::EfiResult'>EfiResult</a>&lt;()&gt;</code></h4>
+<div class='docblock'><p>Fills the rectangle with a single color.</p>
+</div><h4 id='method.copy_buffer_to_video' class='method'><code>fn <a href='#method.copy_buffer_to_video' class='fnname'>copy_buffer_to_video</a>(&amp;self, sx: usize, sy: usize, x: usize, y: usize, w: usize, h: usize, buffer: &amp;[<a class='struct' href='../efi/struct.BltPixel.html' title='efi::BltPixel'>BltPixel</a>], row_len: usize) -&gt; <a class='type' href='../efi/type.EfiResult.html' title='efi::EfiResult'>EfiResult</a>&lt;()&gt;</code></h4>
+<div class='docblock'><p>Copies a pixel buffer to the screen.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../efi/trait.Protocol.html' title='efi::Protocol'>Protocol</a> for <a class='struct' href='../efi/struct.GraphicsOutput.html' title='efi::GraphicsOutput'>GraphicsOutput</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-210' class='srclink' href='../src/efi/efi/src/graphics_output.rs.html#11-13' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedconstant.GUID' class='associatedconstant'><code>const <a href='../efi/trait.Protocol.html#associatedconstant.GUID' class='constant'>GUID</a>: <a class='struct' href='../efi/struct.Guid.html' title='efi::Guid'>Guid</a> = sys::GRAPHICS_OUTPUT_PROTOCOL_GUID</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "efi";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
