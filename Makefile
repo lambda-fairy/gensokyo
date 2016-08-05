@@ -111,7 +111,7 @@ doc-upload: $(doc_dir)
 .PHONY: qemu
 qemu: target/gensokyo.gpt
 	$(call log,Running QEMU)
-	qemu-system-x86_64 -bios OVMF.fd -hda $<
+	qemu-system-x86_64 -bios OVMF.fd -hda $< -serial stdio
 
 .PHONY: clean
 clean:

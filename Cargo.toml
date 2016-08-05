@@ -4,11 +4,10 @@ version = "0.1.0"
 authors = ["Chris Wong <lambda.fairy@gmail.com>"]
 
 [dependencies]
+efi = { path = "efi" }
 rlibc = "1.0"
 spin = "0.4.3"
-
-[dependencies.efi]
-path = "efi"
+x86 = { version = "0.7.1", default-features = false }
 
 [lib]
 name = "gensokyo"

@@ -1,26 +1,33 @@
 #![no_std]
 #![feature(asm)]
 #![feature(const_fn)]
+#![feature(core_intrinsics)]
 #![feature(lang_items)]
+#![feature(naked_functions)]
 
 extern crate efi;
 extern crate rlibc;
 extern crate spin;
+extern crate x86;
 
+use core::fmt::Write;
+use core::intrinsics;
 use core::mem;
+use core::slice;
 use efi::{sys, BootServices, GraphicsOutput, MapKey, MemoryMap, MemoryType};
 use spin::{Once, RwLock};
 
 mod bitmap;
 mod bitmap_alloc;
+mod debug;
 
 use bitmap_alloc::BitmapAllocator;
 
 static PHYSICAL_ALLOC: Once<RwLock<BitmapAllocator>> = Once::new();
 
-macro_rules! efi_log {
-    ($out:expr, $fmt:expr) => (write!($out, concat!($fmt, "\r\n")).unwrap());
-    ($out:expr, $fmt:expr, $($arg:tt)*) => (write!($out, concat!($fmt, "\r\n"), $($arg)*).unwrap());
+macro_rules! log {
+    ($fmt:expr) => (writeln!(::debug::COM1.lock(), $fmt).unwrap());
+    ($fmt:expr, $($arg:tt)*) => (writeln!(::debug::COM1.lock(), $fmt, $($arg)*).unwrap());
 }
 
 #[no_mangle]
@@ -29,9 +36,19 @@ pub extern "win64" fn efi_start(
     system_table: *mut sys::SystemTable) -> sys::Status
 {
     let (bs, _rs) = unsafe { efi::init(image_handle, system_table) };
-    let (map_key, _stack) = initialize(&bs);
+    let (map_key, stack) = prepare_launch(&bs);
     bs.exit_boot_services(map_key).map_err(|(status, _)| status).unwrap();
-    abort();
+    unsafe {
+        let stack_end = stack.as_ptr().offset(stack.len() as isize);
+        asm!(
+            r#"
+            mov rsp, rax
+            sub rsp, 32    // Win64 ABI mandates 32 bytes of scratch space
+            mov rbp, rsp
+            jmp blastoff
+            "# : : "{rax}"(stack_end) : : "intel", "volatile");
+        intrinsics::unreachable();
+    }
 }
 
 /// Performs any UEFI-specific initialization.
@@ -50,26 +67,27 @@ pub extern "win64" fn efi_start(
 ///
 /// 3. Wait for non-lexical borrows to land, so we can just `mem::drop` the
 ///    handle and avoid this rigmarole in the first place
-fn initialize(bs: &BootServices) -> (MapKey, *mut u8) {
-    let stdout = bs.stdout();
+///
+/// This code uses solution (2).
+fn prepare_launch(bs: &BootServices) -> (MapKey, &'static mut [u8]) {
     {
         let graphics_output = bs.locate_protocol::<GraphicsOutput>()
             .expect("could not find graphics adapter");
         for mode in 0 .. graphics_output.max_mode() {
             let info = graphics_output.query_mode(mode);
-            efi_log!(stdout, "");
-            efi_log!(stdout, "Mode #{}:", mode);
-            efi_log!(stdout, "{:?}", info);
+            log!("");
+            log!("Mode #{}:", mode);
+            log!("{:?}", info);
         }
-        efi_log!(stdout, "");
-        efi_log!(stdout, "Current mode is: {}", graphics_output.current_mode());
+        log!("");
+        log!("Current mode is: {}", graphics_output.current_mode());
     }
     // Construct the physical memory allocator
     let memory_size = {
         let (memory_map, _) = bs.memory_map();
         calculate_physical_memory_size(&memory_map)
     };
-    efi_log!(stdout, "Found {} bytes of memory", memory_size);
+    log!("Found {} bytes of memory", memory_size);
     let physical_alloc = BitmapAllocator::new(
         memory_size, efi::PAGE_SIZE, |size| unsafe { bs.allocate(size) });
     PHYSICAL_ALLOC.call_once(|| RwLock::new(physical_alloc));
@@ -87,7 +105,11 @@ fn initialize(bs: &BootServices) -> (MapKey, *mut u8) {
     // overwritten at the end of the boot process
     // So we must allocate a new stack and hop into it
     // FIXME: 4k stack lol are you kidding me
-    let stack = PHYSICAL_ALLOC.try().unwrap().write().allocate() as *mut u8;
+    let stack = unsafe {
+        slice::from_raw_parts_mut(
+            PHYSICAL_ALLOC.try().unwrap().write().allocate() as *mut u8,
+            efi::PAGE_SIZE)
+    };
     // We can't deallocate the memory map, since that may change the memory map,
     // invalidating the map key
     mem::forget(memory_map);
@@ -105,6 +127,12 @@ fn is_usable_memory_type(type_: MemoryType) -> bool {
         BootServicesCode | BootServicesData | ConventionalMemory => true,
         _ => false,
     }
+}
+
+#[no_mangle]
+pub extern "win64" fn blastoff() -> ! {
+    log!("Booted successfully!");
+    abort();
 }
 
 #[no_mangle]
